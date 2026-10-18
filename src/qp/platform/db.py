@@ -54,7 +54,7 @@ def create_db_engine(db: DbSettings, *, echo: bool = False) -> Engine:
 
 
 class Database:
-    """Owns an Engine and a session factory."""
+    """Owns an Engine and a session factory. Use as a context manager to dispose of it."""
 
     def __init__(self, engine: Engine) -> None:
         self.engine = engine
@@ -82,3 +82,9 @@ class Database:
 
     def dispose(self) -> None:
         self.engine.dispose()
+
+    def __enter__(self) -> Database:
+        return self
+
+    def __exit__(self, *exc: object) -> None:
+        self.dispose()

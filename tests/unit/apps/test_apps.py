@@ -39,14 +39,18 @@ def test_cli_doctor_reports_config_error(in_tmp_cwd: Path) -> None:
     assert "config: FAIL" in result.output
 
 
-def test_terminal_default_page_renders() -> None:
+def test_terminal_default_page_renders(in_tmp_cwd: Path) -> None:
     at = AppTest.from_file(str(TERMINAL), default_timeout=30).run()
     assert not at.exception
     assert at.title[0].value == "Overview"
 
 
 @pytest.mark.parametrize(("file", "title"), [(f, t) for f, t, _ in PAGES])
-def test_terminal_every_page_renders(file: str, title: str) -> None:
+def test_terminal_every_page_renders(
+    file: str, title: str, in_tmp_cwd: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("QP_DB__HOST", "127.0.0.1")
+    monkeypatch.setenv("QP_DB__PORT", "1")  # no database: pages must degrade gracefully
     at = AppTest.from_file(str(TERMINAL), default_timeout=30).run()
     at.switch_page(f"pages/{file}").run()
     assert not at.exception

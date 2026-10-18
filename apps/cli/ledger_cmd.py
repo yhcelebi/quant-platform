@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Annotated
 
 import typer
+from rich.markup import escape
 from rich.table import Table
 
 from apps.cli.common import console, fail, money, qty, settings
@@ -39,7 +40,7 @@ def account_add(
     """Create an account (with its default sleeve 'main')."""
     try:
         acct = Account(code, name, account_type, purpose, Currency(currency), broker)
-        with Database.from_settings(settings().db).session() as s:
+        with Database.from_settings(settings().db) as db, db.session() as s:
             add_account(s, acct)
     except QPError as exc:
         fail(str(exc))
@@ -49,7 +50,7 @@ def account_add(
 @account_app.command("list")
 def account_list() -> None:
     """List accounts."""
-    with Database.from_settings(settings().db).session() as s:
+    with Database.from_settings(settings().db) as db, db.session() as s:
         rows = LedgerRepository(s).accounts()
     table = Table("code", "name", "type", "purpose", "currency", "broker")
     for a in rows:
@@ -84,7 +85,7 @@ def import_file(
     """Import a canonical ledger CSV (docs/ledger-csv-format.md). All rows or none."""
     cfg = settings()
     rates = RateTable.from_dir(default_config_dir() / "rates")
-    with Database.from_settings(cfg.db).session() as s:
+    with Database.from_settings(cfg.db) as db, db.session() as s:
         plan = plan_import_from_db(
             s, file.read_bytes(), file.name, now=SystemClock().now(), rates=rates
         )
@@ -116,7 +117,7 @@ def list_transactions(
     limit: Annotated[int, typer.Option(help="Most recent N")] = 50,
 ) -> None:
     """List recent transactions (reversed ones are marked)."""
-    with Database.from_settings(settings().db).session() as s:
+    with Database.from_settings(settings().db) as db, db.session() as s:
         txs = LedgerRepository(s).transactions()
     reversed_ids = {t.reverses_id for t in txs if t.reverses_id is not None}
     rows = [t for t in txs if account is None or t.account == account][-limit:]
@@ -134,7 +135,7 @@ def list_transactions(
     for t in rows:
         pos = t.legs_of(LegKind.POSITION)
         cash = ", ".join(f"{money(leg.amount)} {leg.currency}" for leg in t.legs_of(LegKind.CASH))
-        kind = t.tx_type.value + (" [reversed]" if t.id in reversed_ids else "")
+        kind = t.tx_type.value + (" (reversed)" if t.id in reversed_ids else "")
         if t.reverses_id is not None:
             kind += f" of #{t.reverses_id}"
         table.add_row(
@@ -146,7 +147,7 @@ def list_transactions(
             ", ".join(qty(p.quantity) for p in pos),
             cash,
             to_istanbul(t.recorded_at).strftime("%Y-%m-%d %H:%M"),
-            t.note,
+            escape(t.note),
         )
     console.print(table)
 
@@ -161,7 +162,7 @@ def reverse_transaction(
     if not yes and not typer.confirm(f"Reverse transaction {tx_id}?"):
         fail("aborted")
     try:
-        with Database.from_settings(settings().db).session() as s:
+        with Database.from_settings(settings().db) as db, db.session() as s:
             rev = reverse(s, tx_id, note=note, now=SystemClock().now())
     except QPError as exc:
         fail(str(exc))

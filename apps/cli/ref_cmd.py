@@ -19,8 +19,7 @@ app = typer.Typer(no_args_is_help=True, help="Reference data: venues and instrum
 @app.command("venues")
 def venues() -> None:
     """List venues."""
-    db = Database.from_settings(settings().db)
-    with db.session() as s:
+    with Database.from_settings(settings().db) as db, db.session() as s:
         rows = ReferenceRepository(s).venues()
     table = Table("code", "name", "timezone", "country", "currency")
     for v in rows:
@@ -33,8 +32,7 @@ def venues() -> None:
 @app.command("instruments")
 def instruments() -> None:
     """List instruments."""
-    db = Database.from_settings(settings().db)
-    with db.session() as s:
+    with Database.from_settings(settings().db) as db, db.session() as s:
         rows = ReferenceRepository(s).instruments()
     table = Table("id", "asset_class", "currency", "name", "isin")
     for i in rows:
@@ -53,8 +51,7 @@ def import_instruments(
     ] = False,
 ) -> None:
     """Import instruments from CSV. Existing identical rows are skipped."""
-    db = Database.from_settings(settings().db)
-    with db.session() as s:
+    with Database.from_settings(settings().db) as db, db.session() as s:
         repo = ReferenceRepository(s)
         existing = {i.id: i for i in repo.instruments()}
         plan = plan_instrument_import(
