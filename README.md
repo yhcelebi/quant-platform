@@ -19,7 +19,8 @@ make check        # lint, types, import contracts, tests
 make terminal     # Streamlit UI
 ```
 
-Other targets: `make help`.
+Other targets: `make help`. Importing your ledger: [runbook](docs/runbooks/ledger-import.md)
+and the [CSV format](docs/ledger-csv-format.md).
 
 ## Safety
 

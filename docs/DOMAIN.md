@@ -33,6 +33,12 @@ changes this file first.
 - Buy fees are added to cost; sell fees are deducted from proceeds.
 - Cost of a sale = quantity sold × current average cost. Average cost is unchanged by a sale.
 - Each lot's cost is also stored in TRY at the trade-time FX rate.
+- Positions, costs and P&L are derived by replaying ledger facts (ADR 0005); nothing derived
+  is stored. Selling more than is held is an error.
+- Same-date order: corporate actions, transfers out, other transactions, transfers in; then
+  by trade time, recording time and file order.
+- A reversal cancels its original (both are ignored from then on); `known_at` views still
+  show the ledger as it was known before the reversal.
 
 ## Corporate actions
 
@@ -42,7 +48,11 @@ Types: `split`, `bonus_issue` (bedelsiz), `rights_issue` (bedelli), `cash_divide
 - Bonus issue with ratio *k*: quantity × (1 + *k*), total cost unchanged, pre-ex-date price
   factor 1 / (1 + *k*).
 - Cash dividend: gross = shares × amount per share; withholding = gross × rate (dated
-  config); net = gross − withholding. Cost basis unchanged.
+  config); net = gross − withholding, each rounded half-even to the currency's minor unit.
+  Cost basis unchanged. Eligible shares = holding at the end of the day before the ex-date;
+  the dividend is booked on the pay date.
+- Split ratio *r*: quantity × *r*, cost unchanged, price factor 1 / *r*. Share-count actions
+  and mergers are booked on the ex-date; merger cost carries over to the new instrument.
 - Corporate actions are point-in-time facts too: adjusted prices as of *t* use only actions
   known at *t*.
 

@@ -114,6 +114,12 @@ Defined in the `Makefile` (built in Phase 0):
 | `make doctor`       | `qp doctor`: environment, config, DB, migrations, lake health   |
 | `make deps-smoke`   | install all groups; smoke-test research/trading libraries       |
 | `make help`         | list every target                                               |
+| `uv run qp ref import FILE [--dry-run]` | import instruments                              |
+| `uv run qp ledger account add CODE --name ...` | create an account                        |
+| `uv run qp ledger import FILE [--dry-run]` | import canonical ledger CSV                  |
+| `uv run qp ledger list / reverse ID --note ...` | list / correct (append-only)            |
+| `uv run qp ledger reconcile FILE --as-of DATE` | compare with a broker statement          |
+| `uv run qp portfolio show [--as-of] [--currency] [--method] [--known-at]` | holdings  |
 
 Local PostgreSQL 16 runs in Docker on `127.0.0.1:5433` (ADR 0002). Integration tests skip
 without a database locally; CI sets `QP_REQUIRE_DB=1` so they must run there.

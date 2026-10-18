@@ -7,7 +7,7 @@ Each phase must meet its exit criteria before the next starts. One phase per ses
 | Phase | Name                         | Status       | Exit criteria met | Notes |
 |-------|------------------------------|--------------|-------------------|-------|
 | 0     | Foundation                   | done         | yes (2026-10-18)  | `make check` green in CI ([run 39115989762](https://github.com/yhcelebi/quant-platform/actions/runs/39115989762)); local `db-up`/`migrate` not yet run on owner machine (Docker was off) |
-| 1     | Ledger & portfolio           | not started  | —                 |       |
+| 1     | Ledger & portfolio           | in progress  | partly            | Built; reference cases a–f pass. Awaiting owner check: holdings vs broker statements (`qp ledger reconcile`) |
 | 2     | Data lake & connectors       | not started  | —                 |       |
 | 3     | Performance & risk           | not started  | —                 |       |
 | 4     | Macro & news center          | not started  | —                 |       |
