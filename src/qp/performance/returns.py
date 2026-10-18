@@ -54,16 +54,32 @@ def inflation_between(index_start: Decimal, index_end: Decimal) -> Decimal:
     return index_end / index_start - ONE
 
 
-def _npv(rate: float, flows: Sequence[tuple[float, float]]) -> float:
-    return float(sum(cf / (1.0 + rate) ** t for t, cf in flows))
+def _scaled_npv(g: float, flows: Sequence[tuple[float, float]]) -> float:
+    """NPV at 1 + x = e^g, divided by its largest discount factor so nothing overflows.
+
+    Dividing by a positive number keeps the sign and the roots, which is all brentq needs.
+    """
+    exponents = [-g * t for t, _ in flows]
+    top = max(exponents)
+    return math.fsum(cf * math.exp(e - top) for (_, cf), e in zip(flows, exponents, strict=True))
+
+
+# Grid in g = ln(1 + x): from x ~ -100% (g = -40) to x ~ e^40 (g = 40), finer near 0, so short
+# holding periods with extreme annualized rates still have a bracketed root.
+_GRID = sorted(
+    {0.0}
+    | {sign * v for sign in (-1.0, 1.0) for v in (0.01, 0.03, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7)}
+    | {sign * v for sign in (-1.0, 1.0) for v in (1.0, 1.5, 2.0, 3.0, 5.0, 8.0, 12, 20, 30, 40)}
+)
 
 
 def xirr(cashflows: Sequence[tuple[date, Decimal]], *, xtol: float = 1e-12) -> float:
     """Money-weighted return (annual, actual/365). Contributions negative, ending value
-    positive. Raises if there is no sign change or no root in (-99.99%, 1e6%).
+    positive. Raises if there is no sign change or no root with ln(1 + x) in [-40, 40].
 
-    With several sign changes more than one root can exist; the root closest to 0 found on
-    a bracketing grid is returned.
+    The root is searched in g = ln(1 + x), so a few days' result annualizes to very large
+    (or near -100%) rates without overflow. With several sign changes more than one root
+    can exist; the root closest to 0 found on a bracketing grid is returned.
     """
     if len(cashflows) < 2:
         raise QPValidationError("xirr needs at least two cash flows")
@@ -71,32 +87,16 @@ def xirr(cashflows: Sequence[tuple[date, Decimal]], *, xtol: float = 1e-12) -> f
     flows = [((d - t0).days / 365.0, to_float64(cf)) for d, cf in cashflows]
     if not (any(cf < 0 for _, cf in flows) and any(cf > 0 for _, cf in flows)):
         raise QPValidationError("xirr needs both negative and positive cash flows")
-    grid = [
-        -0.9999,
-        -0.99,
-        -0.9,
-        -0.75,
-        -0.5,
-        -0.25,
-        -0.1,
-        0.0,
-        0.1,
-        0.25,
-        0.5,
-        1.0,
-        2.0,
-        5.0,
-        10.0,
-        100.0,
-        10000.0,
-    ]
     roots: list[float] = []
-    for lo, hi in pairwise(grid):
-        f_lo, f_hi = _npv(lo, flows), _npv(hi, flows)
+    for lo, hi in pairwise(_GRID):
+        f_lo, f_hi = _scaled_npv(lo, flows), _scaled_npv(hi, flows)
         if f_lo == 0:
             roots.append(lo)
         elif math.copysign(1, f_lo) != math.copysign(1, f_hi):
-            roots.append(float(brentq(_npv, lo, hi, args=(flows,), xtol=xtol, maxiter=500)))
+            g = brentq(_scaled_npv, lo, hi, args=(flows,), xtol=xtol, maxiter=500)
+            roots.append(float(g))
+    if _scaled_npv(_GRID[-1], flows) == 0:
+        roots.append(_GRID[-1])
     if not roots:
         raise QPValidationError("xirr found no root")
-    return min(roots, key=abs)
+    return min((math.expm1(g) for g in roots), key=abs)
