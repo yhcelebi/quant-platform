@@ -43,6 +43,7 @@ dev = [
     "import-linter>=2.15",
     "pre-commit>=4.7",
     "types-pyyaml>=6.0",
+    "scipy-stubs>=1.18.1.1",
 ]
 research = [
     "vectorbt>=1.1",
@@ -127,7 +128,7 @@ module = ["qp.core", "qp.core.*", "qp.platform", "qp.platform.*", "qp.ledger", "
 strict = true
 
 [[tool.mypy.overrides]]
-module = ["apscheduler.*", "streamlit.*", "scipy.*"]
+module = ["apscheduler.*", "streamlit.*"]
 ignore_missing_imports = true
 
 # --------------------------------------------------------------------------- pytest
