@@ -50,7 +50,9 @@ def _rows(path: Path, columns: tuple[str, ...]) -> Iterator[tuple[int, dict[str,
         if not required <= header or not header <= set(columns):
             raise ManualDataError(f"{path}: header must be {list(columns)} (known_time optional)")
         for line, raw in enumerate(reader, start=2):
-            yield line, {k: (v or "").strip() for k, v in raw.items()}
+            if None in raw or None in raw.values():
+                raise ManualDataError(f"{path}: line {line}: field count differs from the header")
+            yield line, {k: v.strip() for k, v in raw.items()}
 
 
 def _load[T](path: Path, columns: tuple[str, ...], parse: Callable[[dict[str, str]], T]) -> list[T]:

@@ -23,8 +23,8 @@
 6. **Phase 1 valuation inputs** are owner-maintained `prices.csv` and `fx.csv` in
    `data/manual/` (gitignored), behind the `qp.data.market.MarketData` interface that the
    phase 2 lake will also implement. Each row has `source` and `known_time` (default end of
-   day, Istanbul). Missing or stale (> 7 days, configurable) prices are reported, never
-   estimated; totals are marked incomplete.
+   day, Istanbul). Missing or stale (> 7 days, configurable) prices and FX rates are
+   reported, never estimated; totals are marked incomplete.
 7. **USD view** converts TRY values at the as-of USD/TRY rate. USD-basis cost and P&L for
    TRY assets need historical USD rates per lot and are deferred to phase 3 (performance).
 

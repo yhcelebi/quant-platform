@@ -107,6 +107,19 @@ def build_report(
         report.warnings.append(f"no USD/TRY rate on or before {as_of}: USD view unavailable")
     usd_rate = report.usd_try.rate_try if report.usd_try else None
     stale_limit = as_of - timedelta(days=stale_after_days)
+    stale_fx_warned: set[Currency] = set()
+
+    def fx_is_stale(fx: FxPoint | None) -> bool:
+        if fx is None or fx.valid_date >= stale_limit:
+            return False
+        if fx.currency not in stale_fx_warned:
+            stale_fx_warned.add(fx.currency)
+            report.warnings.append(
+                f"{fx.currency}/TRY rate from {fx.valid_date} is older than {stale_after_days} days"
+            )
+        return True
+
+    fx_is_stale(report.usd_try)
 
     def wanted(account: str) -> bool:
         return accounts is None or account in accounts
@@ -132,12 +145,13 @@ def build_report(
             report.warnings.append(
                 f"{pos.account} {pos.instrument}: no {pos.currency}/TRY rate on or before {as_of}"
             )
-        stale = price is not None and price.valid_date < stale_limit
-        if stale and price is not None:
+        stale_price = price is not None and price.valid_date < stale_limit
+        if stale_price and price is not None:
             report.warnings.append(
                 f"{pos.instrument}: price from {price.valid_date} "
                 f"is older than {stale_after_days} days"
             )
+        stale = fx_is_stale(fx) or stale_price
         v = value_position(
             pos.account,
             pos.instrument,
@@ -155,6 +169,7 @@ def build_report(
         if not wanted(account):
             continue
         fx = try_rate(market, currency, as_of, as_of=facts_as_of)
+        fx_is_stale(fx)
         amount_try = amount * fx.rate_try if fx else None
         if fx is None:
             report.warnings.append(

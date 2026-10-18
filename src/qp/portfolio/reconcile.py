@@ -40,7 +40,9 @@ def parse_statement(
     if not header <= set(COLUMNS) or "account" not in header:
         raise QPError(f"statement header must use {list(COLUMNS)}")
     for line, raw in enumerate(reader, start=2):
-        row = {k: (v or "").strip() for k, v in raw.items()}
+        if None in raw or None in raw.values():
+            raise QPError(f"statement line {line}: field count differs from the header")
+        row = {k: v.strip() for k, v in raw.items()}
         try:
             if row.get("instrument"):
                 key = (row["account"], InstrumentId.parse(row["instrument"]))

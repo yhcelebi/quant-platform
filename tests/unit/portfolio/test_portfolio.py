@@ -95,6 +95,8 @@ def test_manual_data_files(tmp_path: Path) -> None:
         "valid_date,instrument,price,currency,source\n02.01.2025,THYAO.BIST,1,TRY,me\n",
         "date,instrument,price\n2025-01-02,THYAO.BIST,1\n",
         "valid_date,instrument,price,currency,source,known_time\n2025-01-02,THYAO.BIST,1,TRY,me,2025-01-02T10:00:00\n",
+        "valid_date,instrument,price,currency,source\n2025-01-02,THYAO.BIST,12,50,TRY,me\n",
+        "valid_date,instrument,price,currency,source\n2025-01-02,THYAO.BIST,12.50,TRY\n",
     ],
 )
 def test_manual_data_rejects_bad_rows(tmp_path: Path, content: str) -> None:
@@ -209,3 +211,24 @@ def test_reconcile_reports_every_difference() -> None:
         "GARAN.BIST",
         "AAPL.NASDAQ",
     }
+
+
+def test_report_flags_stale_fx_rates() -> None:
+    md = ManualMarketData(
+        [price(THYAO, date(2025, 6, 27), "25"), price(AAPL, date(2025, 6, 27), "200", "USD")],
+        [fx(date(2025, 1, 2), "35")],
+    )
+    report = build_report(_ledger(), md, as_of=date(2025, 6, 30))
+    stale = [w for w in report.warnings if "USD/TRY rate from 2025-01-02" in w]
+    assert len(stale) == 1  # once per currency, not per position or cash row
+    rows = {r.valuation.instrument: r for r in report.positions}
+    assert rows[AAPL].stale
+    assert not rows[THYAO].stale
+
+
+def test_statement_with_wrong_field_count_is_rejected() -> None:
+    from qp.core import QPError
+
+    state = replay(_ledger())
+    with pytest.raises(QPError, match="field count"):
+        reconcile(state, "account,instrument,quantity\nA,THYAO.BIST,1,5\n")
