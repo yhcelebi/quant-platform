@@ -1,0 +1,16 @@
+# Base settings. Precedence: base.yaml < configs/<mode>/*.yaml < environment / .env.
+# NO SECRETS HERE: passwords and tokens come only from env/.env (a secret here is an error).
+mode: paper            # backtest | paper | live. Default is paper.
+
+db:
+  host: localhost
+  port: 5433           # 5433 avoids clashing with a host Postgres on 5432
+  name: qp
+  user: qp
+
+lake:
+  root: data/lake
+
+log:
+  level: INFO
+  json_format: true

@@ -1,0 +1,9 @@
+# Live-mode overlay. Merged over base.yaml when mode=live.
+#
+# Selecting mode=live ARMS NOTHING by itself. A live order path needs ALL of:
+#   1. mode: live
+#   2. process env QP_LIVE_TRADING=I_UNDERSTAND_THE_RISK
+#   3. an approved_live promotion record for the strategy
+# and every order still passes the qp.risk pre-trade gate and the kill switch.
+# Live credentials are separate from paper credentials and live only in env/.env.
+{}
