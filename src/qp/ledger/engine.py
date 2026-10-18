@@ -253,6 +253,9 @@ def replay(
         state.warnings.append(
             f"transfer {transfer_id} from {pending.tx.account} has no matching transfer_in yet"
         )
+    for (account, currency), balance in state.cash_balances().items():
+        if balance < 0:
+            state.warnings.append(f"{account} {currency.code} cash is negative: {balance}")
     return state
 
 
@@ -293,6 +296,15 @@ def _to_main(tx: Transaction, amount: Decimal, currency: Currency) -> Decimal:
 
 def _fees_in_main(tx: Transaction) -> Decimal:
     return sum((_to_main(tx, f.amount, f.currency) for f in tx.legs_of(LegKind.FEE)), ZERO)
+
+
+def _fees_in_try(tx: Transaction) -> Decimal:
+    """Fees in TRY: TRY fees as paid, main-currency fees at the transaction's rate."""
+    total = ZERO
+    for f in tx.legs_of(LegKind.FEE):
+        _to_main(tx, f.amount, f.currency)  # same currency rules as the main-currency total
+        total += f.amount if f.currency == TRY else f.amount * tx.fx
+    return total
 
 
 def _record_fees(state: LedgerState, tx: Transaction) -> None:
@@ -397,9 +409,8 @@ def _acquire(state: LedgerState, tx: Transaction, *, with_cash: bool) -> None:
     if leg.quantity <= 0:
         raise LedgerError(f"{tx.describe()}: acquisition quantity must be positive")
     pos = _get_position(state, tx, leg)
-    fees = _fees_in_main(tx)
-    cost = leg.amount + fees
-    cost_try = cost * tx.fx
+    cost = leg.amount + _fees_in_main(tx)
+    cost_try = leg.amount * tx.fx + _fees_in_try(tx)
     if with_cash:
         expected: dict[Currency, Decimal] = defaultdict(Decimal)
         expected[leg.currency] -= leg.amount
@@ -482,7 +493,7 @@ def _sell(state: LedgerState, tx: Transaction) -> None:
             currency=leg.currency,
             proceeds=proceeds,
             cost=cost,
-            proceeds_try=proceeds * tx.fx,
+            proceeds_try=leg.amount * tx.fx - _fees_in_try(tx),
             cost_try=cost_try,
             fifo_cost=sum((lot.cost for lot in lots), ZERO),
             fifo_cost_try=sum((lot.cost_try for lot in lots), ZERO),
@@ -651,6 +662,18 @@ def _share_count_action(state: LedgerState, tx: Transaction) -> None:
     pos.lots = _scale_lots(pos.lots, new_quantity)
     pos.quantity = new_quantity
     _note_history(state, pos, tx.trade_date)
+    _warn_in_transit(state, tx, ca.instrument)
+
+
+def _warn_in_transit(state: LedgerState, tx: Transaction, instrument: InstrumentId) -> None:
+    """Shares between transfer_out and transfer_in are in no account, so a corporate action
+    on them is not applied; say so instead of silently missing it."""
+    for transfer_id, pending in state._transit.items():
+        if pending.instrument == instrument:
+            state.warnings.append(
+                f"{tx.describe()}: {pending.quantity} {instrument} in transit "
+                f"(transfer {transfer_id}) are not covered by this action"
+            )
 
 
 def _cash_dividend(state: LedgerState, tx: Transaction) -> None:
@@ -679,6 +702,7 @@ def _cash_dividend(state: LedgerState, tx: Transaction) -> None:
         )
     if gross != computed:
         state.warnings.append(f"{tx.describe()}: gross {gross} vs computed {computed} (rounding)")
+    _warn_in_transit(state, tx, ca.instrument)
     state.income.append(
         IncomeEvent(
             tx.account,
@@ -716,6 +740,12 @@ def _merger(state: LedgerState, tx: Transaction) -> None:
             f"and one into {ca.new_instrument}"
         )
     old_leg, new_leg = old[0], new[0]
+    if new_leg.currency != old_leg.currency:
+        raise LedgerError(
+            f"{tx.describe()}: cross-currency mergers ({old_leg.currency} -> "
+            f"{new_leg.currency}) are not supported; the carried cost would be in the wrong "
+            "currency"
+        )
     assert old_leg.quantity is not None
     assert new_leg.quantity is not None
     pos = state.positions.get((tx.account, ca.instrument))
@@ -769,7 +799,7 @@ def _delisting(state: LedgerState, tx: Transaction) -> None:
             pos.currency,
             proceeds,
             cost,
-            proceeds * tx.fx,
+            proceeds * tx.fx if proceeds else ZERO,
             cost_try,
             sum((lot.cost for lot in lots), ZERO),
             sum((lot.cost_try for lot in lots), ZERO),

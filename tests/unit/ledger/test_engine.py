@@ -7,7 +7,7 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
-from qp.core import TRY, USD, InstrumentId, QPValidationError
+from qp.core import TRY, USD, Currency, InstrumentId, QPValidationError
 from qp.ledger import builders as b
 from qp.ledger.domain import LedgerError, Leg, LegKind, Transaction, TxType
 from qp.ledger.engine import replay
@@ -530,3 +530,58 @@ def test_property_reversed_trades_vanish(trades: list[tuple[Decimal, Decimal]]) 
     assert pos is not None
     assert pos.quantity == 7
     assert pos.cost == 21
+
+
+# ----------------------------------------------------------------- review findings (2026-10-19)
+def _usd(day: int, side: TxType, fee_try: str = "0", fx: str = "34.37") -> Transaction:
+    return b.trade(
+        c(day),
+        side,
+        AAPL,
+        USD,
+        Decimal("10"),
+        Decimal("100"),
+        fee=Decimal(fee_try),
+        fee_currency=TRY,
+        fx_rate_try=Decimal(fx),
+    )
+
+
+def test_try_fee_on_foreign_trade_is_exact_in_try() -> None:
+    s = replay([_usd(1, TxType.BUY, "10"), _usd(2, TxType.SELL, "10")])
+    r = s.realizations[0]
+    assert r.cost_try == Decimal("34380")  # 1000 x 34.37 + 10, no divide-and-multiply residue
+    assert r.proceeds_try == Decimal("34360")  # 1000 x 34.37 - 10
+    assert r.realized_try == Decimal("-20")
+
+
+def test_worthless_foreign_delisting_needs_no_fx_rate() -> None:
+    d = ca(CorporateActionType.DELISTING, 3, inst=AAPL)
+    s = replay([_usd(1, TxType.BUY, fx="35"), b.delisting(c(3), d, USD, Decimal("10"))])
+    r = s.realizations[0]
+    assert r.realized == Decimal("-1000")
+    assert r.realized_try == Decimal("-35000")
+
+
+def test_cross_currency_merger_is_rejected() -> None:
+    xetra = InstrumentId.parse("NEWCO.XETRA")
+    m = ca(CorporateActionType.MERGER, 3, inst=AAPL, ratio=Decimal("1"), new_instrument=xetra)
+    eur = b.merger(c(3), m, USD, Decimal("10"), Currency("EUR"), Decimal("10"))
+    with pytest.raises(LedgerError, match="cross-currency"):
+        replay([_usd(1, TxType.BUY), eur])
+
+
+def test_corporate_action_on_shares_in_transit_is_flagged() -> None:
+    out = b.securities_transfer(c(2, "A"), TxType.TRANSFER_OUT, "t1", THYAO, TRY, Decimal("100"))
+    split = b.share_count_action(
+        c(3), ca(CorporateActionType.SPLIT, 3, ratio=Decimal("2")), TRY, Decimal("50")
+    )
+    s = replay([buy(1, "150", "10"), out, split])
+    assert any("in transit" in w for w in s.warnings)
+
+
+def test_negative_cash_is_flagged() -> None:
+    s = replay([buy(1, "10", "10")])
+    assert any("cash is negative" in w for w in s.warnings)
+    funded = [b.cash_flow(c(0), TxType.DEPOSIT, TRY, Decimal("100")), buy(1, "10", "10")]
+    assert not any("negative" in w for w in replay(funded).warnings)
