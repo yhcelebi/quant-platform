@@ -8,14 +8,28 @@ from __future__ import annotations
 from collections.abc import Iterator
 from contextlib import contextmanager
 
-from sqlalchemy import Engine, create_engine, text
+from sqlalchemy import Engine, MetaData, create_engine, text
 from sqlalchemy.engine import URL
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 from qp.platform.settings import DbSettings
 
 # Operational schemas, created by the Alembic baseline (db/migrations).
 SCHEMAS: tuple[str, ...] = ("ref", "ledger", "trading", "news", "journal", "ops")
+
+NAMING_CONVENTION: dict[str, str] = {
+    "ix": "ix_%(column_0_label)s",
+    "uq": "uq_%(table_name)s_%(column_0_N_name)s",
+    "ck": "ck_%(table_name)s_%(constraint_name)s",
+    "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
+    "pk": "pk_%(table_name)s",
+}
+
+
+class Base(DeclarativeBase):
+    """Declarative base for every qp ORM model; one MetaData so cross-schema FKs resolve."""
+
+    metadata = MetaData(naming_convention=NAMING_CONVENTION)
 
 
 def database_url(db: DbSettings) -> URL:

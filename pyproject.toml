@@ -94,6 +94,7 @@ ignore = [
 "scripts/deps_smoke.py" = ["T20", "TID251"]
 "research/**" = ["T20"]
 "db/migrations/**" = ["N999"]
+"db/migrations/versions/**" = ["N999", "E501"]  # generated DDL with long SQL strings
 
 # Library boundaries (rule 7) for code that import-linter cannot see.
 # The root config bans everything that is "somebody else's" library; nested ruff.toml

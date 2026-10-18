@@ -9,7 +9,9 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy.engine import Connection
 
-from qp.platform.db import create_db_engine, database_url
+import qp.ledger.models
+import qp.reference.models
+from qp.platform.db import SCHEMAS, Base, create_db_engine, database_url
 from qp.platform.settings import load_settings
 
 config = context.config
@@ -17,8 +19,15 @@ config = context.config
 if config.config_file_name is not None and not config.attributes.get("skip_logging_config"):
     fileConfig(config.config_file_name)
 
-# Phase 1+ sets this to the qp ORM MetaData for autogenerate support.
-target_metadata = None
+target_metadata = Base.metadata
+_ = qp.ledger.models
+
+
+def include_name(name: str | None, type_: str, parent_names: object) -> bool:
+    """Autogenerate only looks at qp's schemas."""
+    if type_ == "schema":
+        return name in SCHEMAS
+    return True
 
 
 def run_migrations_offline() -> None:
@@ -35,7 +44,13 @@ def run_migrations_offline() -> None:
 
 
 def _run(connection: Connection) -> None:
-    context.configure(connection=connection, target_metadata=target_metadata)
+    context.configure(
+        connection=connection,
+        target_metadata=target_metadata,
+        include_schemas=True,
+        include_name=include_name,
+        compare_server_default=True,
+    )
     with context.begin_transaction():
         context.run_migrations()
 

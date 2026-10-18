@@ -4,7 +4,7 @@ May import qp.stats and qp.core only. Built in phase 0.
 """
 
 from qp.platform.bootstrap import init_platform
-from qp.platform.db import SCHEMAS, Database, create_db_engine, database_url
+from qp.platform.db import SCHEMAS, Base, Database, create_db_engine, database_url
 from qp.platform.lake import LakePaths
 from qp.platform.logging import SecretRedactor, configure_logging, get_logger
 from qp.platform.notifier import (
@@ -31,6 +31,7 @@ __all__ = [
     "LIVE_TRADING_ACK",
     "LIVE_TRADING_ENV_VAR",
     "SCHEMAS",
+    "Base",
     "Database",
     "DbSettings",
     "LakePaths",
