@@ -35,6 +35,11 @@ uv run qp ledger import my/correction.csv           # the corrected row
 The original stays in the database; history views (`--known-at`) still show what was known
 before the correction.
 
+If the corrected trade shares its date with other trades, give it (and ideally all trades)
+a `trade_time`. Untimed same-day trades are ordered by when they were recorded, so a
+re-entered buy would otherwise sort after a sale imported earlier and change that sale's
+average cost.
+
 ## Tips
 
 - Start with `opening_balance` rows (positions with their total cost, and cash) on the day
