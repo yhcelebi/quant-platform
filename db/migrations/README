@@ -1,0 +1,8 @@
+Alembic migrations for the qp PostgreSQL database.
+
+  make migrate                                   # upgrade to head
+  uv run alembic revision -m "describe change"   # new migration
+  uv run alembic upgrade head --sql              # print SQL, no DB needed
+
+The connection URL is built from qp settings (configs/ + env/.env), never alembic.ini.
+The ledger is append-only: migrations must not add UPDATE/DELETE paths to ledger rows.

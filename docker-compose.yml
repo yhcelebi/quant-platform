@@ -1,0 +1,25 @@
+# Local PostgreSQL 16 for qp. Start with `make db-up`.
+# Credentials come from .env (QP_DB__*); copy .env.example to .env first.
+services:
+  postgres:
+    image: postgres:16.15
+    container_name: qp-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${QP_DB__NAME:-qp}
+      POSTGRES_USER: ${QP_DB__USER:-qp}
+      POSTGRES_PASSWORD: ${QP_DB__PASSWORD:?set QP_DB__PASSWORD in .env}
+      TZ: UTC
+      PGTZ: UTC
+    ports:
+      - "127.0.0.1:${QP_DB__PORT:-5433}:5432"
+    volumes:
+      - qp-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  qp-pgdata:
