@@ -1,0 +1,29 @@
+# data and local state (never commit)
+/data/*
+!/data/.gitkeep
+.env
+.env.*
+!.env.example
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+build/
+dist/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.hypothesis/
+.coverage
+coverage.xml
+.import_linter_cache/
+
+# notebooks
+.ipynb_checkpoints/
+
+# editors / os
+.DS_Store
+.idea/
+.vscode/

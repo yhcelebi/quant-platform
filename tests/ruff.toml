@@ -1,0 +1,7 @@
+# tests/: may import streamlit/typer test utilities to exercise apps/, and nautilus_trader
+# to test qp.strategies/backtest/execution. vectorbt stays research-only (revisit for the
+# phase 6 vectorbt-vs-Nautilus parity tests, by ADR).
+extend = "../pyproject.toml"
+
+[lint.flake8-tidy-imports.banned-api]
+"vectorbt".msg = "Only research/ may import vectorbt."

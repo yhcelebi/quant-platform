@@ -1,0 +1,145 @@
+[project]
+name = "qp"
+version = "0.1.0"
+description = "Personal quant platform: wealth accounting, market/macro/news intelligence, research and trading."
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    # core / platform
+    "pydantic>=2.14",
+    "pydantic-settings>=2.16",
+    "pyyaml>=6.0",
+    "python-dotenv>=1.1",
+    "structlog>=26.1",
+    "tzdata>=2026.1",
+    "httpx>=0.28",
+    # storage
+    "sqlalchemy>=2.1",
+    "psycopg[binary]>=3.3",
+    "alembic>=1.20",
+    "duckdb>=1.5",
+    "pyarrow>=26.0",
+    # analytics
+    "numpy>=2.5",
+    "pandas>=3.0",
+    "scipy>=1.18",
+    "statsmodels>=0.15",
+    "arch>=8.0",
+    "scikit-learn>=1.9",
+    # apps (imported only from apps/, enforced by import-linter and ruff)
+    "streamlit>=1.66",
+    "plotly>=7.1",
+    "typer>=0.27",
+    "apscheduler>=3.11,<4",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1",
+    "pytest-cov>=7.0",
+    "hypothesis>=6.170",
+    "ruff>=0.17",
+    "mypy>=2.4",
+    "import-linter>=2.15",
+    "pre-commit>=4.7",
+    "types-pyyaml>=6.0",
+]
+research = [
+    "vectorbt>=1.1",
+    "cvxpy>=1.9",
+    "riskfolio-lib>=7.4",
+    "jupyterlab>=4.4",
+]
+trading = [
+    "nautilus_trader>=1.231",
+    "ccxt>=4.5",
+]
+
+[project.scripts]
+qp = "apps.cli.main:main"
+
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/qp", "apps"]
+
+[tool.uv]
+default-groups = ["dev"]
+
+# --------------------------------------------------------------------------- ruff
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["src", "."]
+extend-include = ["*.ipynb"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W", "F", "I", "UP", "B", "SIM", "C4", "RUF", "PT", "N",
+    "DTZ",    # naive datetimes are bugs (rule 4)
+    "TID",    # banned imports: library boundaries (rule 7)
+    "S",      # security (hardcoded secrets, etc.)
+    "T20",    # no print() in the library
+]
+ignore = [
+    "S101",   # assert is fine in tests and for type narrowing
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S", "T20"]
+"apps/**" = ["T20"]
+"scripts/**" = ["T20"]
+"scripts/deps_smoke.py" = ["T20", "TID251"]
+"research/**" = ["T20"]
+"db/migrations/**" = ["N999"]
+
+# Library boundaries (rule 7) for code that import-linter cannot see.
+# The root config bans everything that is "somebody else's" library; nested ruff.toml
+# files in src/, apps/ and research/ re-declare the list for their own directory.
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
+
+[tool.ruff.lint.flake8-tidy-imports.banned-api]
+"nautilus_trader".msg = "Only qp.strategies, qp.backtest and qp.execution may import nautilus_trader."
+"vectorbt".msg = "Only research/ may import vectorbt."
+"streamlit".msg = "Only apps/ may import streamlit."
+"typer".msg = "Only apps/ may import typer."
+
+# --------------------------------------------------------------------------- mypy
+[tool.mypy]
+python_version = "3.12"
+mypy_path = "src"
+files = ["src/qp", "apps", "tests", "db/migrations"]
+explicit_package_bases = true
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+check_untyped_defs = true
+disallow_incomplete_defs = true
+no_implicit_optional = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = ["qp.core", "qp.core.*", "qp.platform", "qp.platform.*", "qp.ledger", "qp.ledger.*", "qp.risk", "qp.risk.*"]
+strict = true
+
+[[tool.mypy.overrides]]
+module = ["apscheduler.*", "streamlit.*"]
+ignore_missing_imports = true
+
+# --------------------------------------------------------------------------- pytest
+[tool.pytest.ini_options]
+minversion = "9.0"
+testpaths = ["tests"]
+addopts = ["-ra", "--strict-markers", "--strict-config", "--import-mode=importlib"]
+markers = [
+    "integration: needs external services (PostgreSQL); skipped when unavailable",
+    "reference: owner-owned reference cases from tests/reference/",
+]
+filterwarnings = ["error"]
+
+[tool.coverage.run]
+source = ["qp"]
+branch = true

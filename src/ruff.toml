@@ -1,0 +1,8 @@
+# src/qp: never streamlit, typer or vectorbt. nautilus_trader is allowed at this level;
+# import-linter (contract nautilus-boundary) restricts it to strategies/backtest/execution.
+extend = "../pyproject.toml"
+
+[lint.flake8-tidy-imports.banned-api]
+"vectorbt".msg = "Only research/ may import vectorbt."
+"streamlit".msg = "Only apps/ may import streamlit."
+"typer".msg = "Only apps/ may import typer."

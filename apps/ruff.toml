@@ -1,0 +1,7 @@
+# apps/: may import streamlit and typer; never vectorbt (research only) or nautilus_trader
+# (only via qp.strategies / qp.backtest / qp.execution). Rule 7.
+extend = "../pyproject.toml"
+
+[lint.flake8-tidy-imports.banned-api]
+"nautilus_trader".msg = "apps/ must not import nautilus_trader; go through qp.execution / qp.backtest."
+"vectorbt".msg = "Only research/ may import vectorbt."

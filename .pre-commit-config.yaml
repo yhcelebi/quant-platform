@@ -1,0 +1,31 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-added-large-files
+        args: ["--maxkb=1024"]
+      - id: detect-private-key
+      - id: check-merge-conflict
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.17.1
+    hooks:
+      - id: ruff-check
+        args: [--fix]
+      - id: ruff-format
+  - repo: local
+    hooks:
+      - id: uv-lock-check
+        name: uv lock --check
+        entry: uv lock --check
+        language: system
+        pass_filenames: false
+        files: ^(pyproject\.toml|uv\.lock)$
+      - id: reference-cases-owner-owned
+        name: tests/reference is owner-owned (set QP_OWNER_EDIT=1 to allow)
+        entry: bash -c 'if [ "${QP_OWNER_EDIT:-0}" != "1" ]; then echo "tests/reference/ is owner-owned; refusing commit. Owner: set QP_OWNER_EDIT=1."; exit 1; fi'
+        language: system
+        files: ^tests/reference/

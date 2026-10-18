@@ -1,0 +1,8 @@
+# research/: may import vectorbt; never streamlit/typer (apps only) or nautilus_trader
+# (backtests go through qp.backtest). Notebooks (*.ipynb) are linted too. Rule 7.
+extend = "../pyproject.toml"
+
+[lint.flake8-tidy-imports.banned-api]
+"nautilus_trader".msg = "research/ must not import nautilus_trader; use qp.backtest."
+"streamlit".msg = "Only apps/ may import streamlit."
+"typer".msg = "Only apps/ may import typer."
