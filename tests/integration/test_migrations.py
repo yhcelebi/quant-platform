@@ -22,10 +22,12 @@ from qp.platform.settings import DbSettings
 pytestmark = pytest.mark.integration
 
 REPO = Path(__file__).resolve().parents[2]
+# Read at import (collection), before the autouse fixture strips QP_* variables.
+REQUIRE_DB = os.environ.get("QP_REQUIRE_DB") == "1"
 
 
 @pytest.fixture
-def scratch_db() -> Iterator[DbSettings]:
+def scratch_db(host_db_env: dict[str, str]) -> Iterator[DbSettings]:
     base = load_settings(config_dir=REPO / "configs", env_file=REPO / ".env").db
     admin_url = database_url(base.model_copy(update={"name": "postgres"}))
     admin = create_engine(
@@ -36,7 +38,7 @@ def scratch_db() -> Iterator[DbSettings]:
             version = conn.execute(text("SHOW server_version_num")).scalar_one()
     except Exception as exc:  # no server: skip (or fail in CI), and say why
         admin.dispose()
-        if os.environ.get("QP_REQUIRE_DB") == "1":
+        if REQUIRE_DB:
             pytest.fail(f"QP_REQUIRE_DB=1 but PostgreSQL is not reachable: {exc}")
         pytest.skip(f"PostgreSQL not reachable at {base.host}:{base.port}: {type(exc).__name__}")
     assert int(version) // 10000 == 16, f"expected PostgreSQL 16, got {version}"

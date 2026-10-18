@@ -18,16 +18,25 @@ settings.register_profile(
 )
 settings.load_profile(os.environ.get("HYPOTHESIS_PROFILE", "default"))
 
-# Keys that describe the CI/integration database; kept so integration tests can connect.
-_DB_KEYS = {"QP_DB__HOST", "QP_DB__PORT", "QP_DB__NAME", "QP_DB__USER", "QP_DB__PASSWORD"}
+# The integration database connection (e.g. from CI), captured before tests strip QP_*.
+_DB_KEYS = ("QP_DB__HOST", "QP_DB__PORT", "QP_DB__NAME", "QP_DB__USER", "QP_DB__PASSWORD")
+_HOST_DB_ENV = {k: os.environ[k] for k in _DB_KEYS if k in os.environ}
 
 
 @pytest.fixture(autouse=True)
 def _isolated_env(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Strip QP_* variables (except DB connection keys) so the host env cannot leak in."""
+    """Strip every QP_* variable so the host or CI environment cannot leak into tests."""
     for key in list(os.environ):
-        if key.startswith("QP_") and key not in _DB_KEYS:
+        if key.startswith("QP_"):
             monkeypatch.delenv(key, raising=False)
+
+
+@pytest.fixture
+def host_db_env(monkeypatch: pytest.MonkeyPatch) -> dict[str, str]:
+    """Re-apply the host's QP_DB__* connection variables. Integration tests only."""
+    for key, value in _HOST_DB_ENV.items():
+        monkeypatch.setenv(key, value)
+    return dict(_HOST_DB_ENV)
 
 
 @pytest.fixture
