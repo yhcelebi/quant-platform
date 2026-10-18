@@ -11,6 +11,9 @@ db:
 lake:
   root: data/lake
 
+manual:
+  dir: data/manual      # prices.csv and fx.csv you maintain (phase 1 valuation)
+
 log:
   level: INFO
   json_format: true

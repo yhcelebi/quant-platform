@@ -55,6 +55,12 @@ class LakeSettings(_Section):
     root: Path = Path("data/lake")
 
 
+class ManualDataSettings(_Section):
+    """Owner-maintained CSV files (prices.csv, fx.csv). Gitignored under data/."""
+
+    dir: Path = Path("data/manual")
+
+
 class TelegramSettings(_Section):
     bot_token: SecretStr | None = None
     chat_id: str | None = None
@@ -84,6 +90,7 @@ class Settings(BaseSettings):
     mode: Mode = Mode.PAPER
     db: DbSettings = DbSettings()
     lake: LakeSettings = LakeSettings()
+    manual: ManualDataSettings = ManualDataSettings()
     telegram: TelegramSettings = TelegramSettings()
     log: LogSettings = LogSettings()
 

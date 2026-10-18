@@ -1,0 +1,4 @@
+account,instrument,quantity,currency,amount
+EX,THYAO.BIST,300,,
+EX,AAPL.NASDAQ,10,,
+EX,,,TRY,8630.50

@@ -1,0 +1,3 @@
+valid_date,instrument,price,currency,source,known_time
+2025-01-14,AAPL.NASDAQ,220.00,USD,synthetic example,
+2025-01-14,THYAO.BIST,8.00,TRY,synthetic example,

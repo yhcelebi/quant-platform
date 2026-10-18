@@ -1,0 +1,9 @@
+account,type,trade_date,instrument,quantity,price,currency,fee,amount,fx_rate_try,ratio,ex_date,amount_per_share,withholding_rate,external_ref,note
+EX,deposit,2025-01-02,,,,TRY,,10000,,,,,,dep-1,synthetic example (reference cases a-d)
+EX,buy,2025-01-03,THYAO.BIST,100,10.00,TRY,1.00,,,,,,,t-1,
+EX,buy,2025-01-06,THYAO.BIST,100,20.00,TRY,2.00,,,,,,,t-2,
+EX,sell,2025-01-07,THYAO.BIST,50,30.00,TRY,1.50,,,,,,,t-3,
+EX,bonus_issue,2025-01-08,THYAO.BIST,,,,,,,1,2025-01-08,,,ca-1,100% bonus issue (bedelsiz)
+EX,cash_dividend,2025-01-10,THYAO.BIST,,,TRY,,,,,2025-01-09,0.50,0.10,div-1,10% withholding as in case c
+EX,deposit,2025-01-13,,,,USD,,2001,,,,,,dep-2,
+EX,buy,2025-01-14,AAPL.NASDAQ,10,200.00,USD,1.00,,40.00,,,,,t-4,
