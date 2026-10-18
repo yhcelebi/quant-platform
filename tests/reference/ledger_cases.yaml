@@ -1,0 +1,125 @@
+# OWNER-OWNED. DO NOT EDIT. See tests/reference/README.md.
+#
+# Reference cases for the ledger, portfolio and performance calculations.
+# Monetary values are decimal strings and must be compared exactly (Decimal),
+# unless a `tolerance` is given (float analytics: XIRR, real return).
+# Cases a -> b -> c are sequential on the same account/instrument.
+
+version: 1
+
+cases:
+  a_weighted_average_buy_sell:
+    description: Two buys with fees, then a partial sell. Weighted-average cost basis.
+    instrument: THYAO.BIST
+    currency: TRY
+    steps:
+      - action: buy
+        quantity: "100"
+        price: "10.00"
+        fee: "1.00"
+      - action: buy
+        quantity: "100"
+        price: "20.00"
+        fee: "2.00"
+        expect:
+          quantity: "200"
+          cost: "3003.00"
+          avg_cost: "15.015"
+      - action: sell
+        quantity: "50"
+        price: "30.00"
+        fee: "1.50"
+        expect:
+          net_proceeds: "1498.50"
+          cost_of_sold: "750.75"
+          realized_pnl: "747.75"
+          quantity: "150"
+          cost: "2252.25"
+          avg_cost: "15.015"
+
+  b_bonus_issue:
+    description: Continues case a. 100% bonus issue (bedelsiz), ratio k = 1.
+    continues: a_weighted_average_buy_sell
+    instrument: THYAO.BIST
+    currency: TRY
+    steps:
+      - action: bonus_issue
+        ratio: "1"
+        expect:
+          quantity: "300"
+          cost: "2252.25"
+          avg_cost: "7.5075"
+          pre_ex_price_factor: "0.5"
+
+  c_cash_dividend:
+    description: Continues case b. Cash dividend with withholding.
+    continues: b_bonus_issue
+    instrument: THYAO.BIST
+    currency: TRY
+    parameters:
+      withholding_rate: "0.10"   # test parameter, not the statutory rate
+    steps:
+      - action: cash_dividend
+        amount_per_share: "0.50"
+        expect:
+          gross: "150.00"
+          withholding: "15.00"
+          net: "135.00"
+          quantity: "300"
+          cost: "2252.25"
+
+  d_foreign_position_fx_split:
+    description: USD position valued in TRY with FX / price effect split.
+    instrument: AAPL.NASDAQ
+    currency: USD
+    reporting_currency: TRY
+    steps:
+      - action: buy
+        quantity: "10"
+        price: "200.00"
+        fee: "1.00"
+        fx_rate: "40.00"          # TRY per USD at trade time
+        expect:
+          cost: "2001.00"
+          cost_try: "80040.00"
+      - action: value
+        price: "220.00"
+        fx_rate: "42.00"          # TRY per USD now
+        expect:
+          value: "2200.00"
+          value_try: "92400.00"
+          unrealized_pnl: "199.00"
+          unrealized_pnl_try: "12360.00"
+          fx_effect_try: "4002.00"
+          price_effect_try: "8358.00"
+
+  e_twr_and_xirr:
+    description: Time-weighted and money-weighted return with an intermediate deposit.
+    currency: TRY
+    day_count: actual/365
+    events:
+      - date: "2025-01-01"
+        flow: "1000"              # deposit (contribution)
+        value_after_flow: "1000"
+      - date: "2025-07-02"
+        value_before_flow: "1100"
+        flow: "1000"              # deposit (contribution)
+        value_after_flow: "2100"
+      - date: "2026-01-01"
+        value_before_flow: "1890"
+    expect:
+      sub_period_returns: ["0.10", "-0.10"]
+      twr: "-0.01"
+      xirr:
+        value: "-0.0728083"
+        tolerance: "5e-7"
+
+  f_real_return:
+    description: Real return from nominal return and inflation (Fisher, not subtraction).
+    inputs:
+      nominal_return: "0.40"
+      inflation: "0.30"
+    expect:
+      real_return:
+        value: "0.0769231"
+        tolerance: "5e-7"

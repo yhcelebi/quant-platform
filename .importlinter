@@ -1,0 +1,132 @@
+# Layer and library-boundary contracts for the qp package.
+# See docs/ARCHITECTURE.md and docs/adr/0001-core-architecture.md.
+#
+# RULE: never weaken or delete a contract to make `make check` pass. Changing the layer
+# map requires an ADR approved by the owner. Adding stricter contracts is fine.
+#
+# apps/ and research/ are not importable packages; their library boundaries
+# (vectorbt only in research/, streamlit/typer only in apps/) are enforced by ruff's
+# flake8-tidy-imports banned-api with per-path ignores (configured in pyproject.toml).
+
+[importlinter]
+root_package = qp
+include_external_packages = True
+
+# ---------------------------------------------------------------------------
+# 1. Layers. High -> low. "|" = independent siblings (must not import each other).
+#    Exhaustive: every top-level module under qp must appear here.
+# ---------------------------------------------------------------------------
+[importlinter:contract:qp-layers]
+name = qp layered architecture
+type = layers
+containers =
+    qp
+layers =
+    assistant
+    reporting
+    decisions | alerts
+    backtest | execution
+    strategies
+    optimization | scenarios
+    risk
+    performance | factors | valuation
+    portfolio
+    ledger | macro | news | fundamentals
+    data
+    reference
+    platform
+    stats
+    core
+exhaustive = true
+exhaustive_ignores =
+    __main__
+broken_contract_guidance =
+    A lower layer must not import a higher one, and siblings must not import each other.
+    backtest and execution must never import each other: that keeps parity real.
+    Strategies must never reach qp.execution (broker adapters).
+    Fix the dependency; do not edit this contract. Layer changes need an owner-approved ADR.
+
+# ---------------------------------------------------------------------------
+# 2. nautilus_trader only in qp.strategies, qp.backtest, qp.execution.
+# ---------------------------------------------------------------------------
+[importlinter:contract:nautilus-boundary]
+name = Only strategies, backtest and execution may import nautilus_trader
+type = forbidden
+source_modules =
+    qp.assistant
+    qp.reporting
+    qp.decisions
+    qp.alerts
+    qp.optimization
+    qp.scenarios
+    qp.risk
+    qp.performance
+    qp.factors
+    qp.valuation
+    qp.portfolio
+    qp.ledger
+    qp.macro
+    qp.news
+    qp.fundamentals
+    qp.data
+    qp.reference
+    qp.platform
+    qp.stats
+    qp.core
+forbidden_modules =
+    nautilus_trader
+
+# ---------------------------------------------------------------------------
+# 3. Signals are pure functions: no Nautilus, no DB, no lake, no network, no settings.
+#    They are reused unchanged by research, backtest, paper and live.
+# ---------------------------------------------------------------------------
+[importlinter:contract:signals-pure]
+name = qp.strategies.signals is pure
+type = forbidden
+source_modules =
+    qp.strategies.signals
+forbidden_modules =
+    nautilus_trader
+    qp.platform
+    qp.data
+    qp.reference
+    sqlalchemy
+    psycopg
+    duckdb
+    pyarrow
+    httpx
+    requests
+    structlog
+
+# ---------------------------------------------------------------------------
+# 4. UI / CLI / exploration libraries never enter the library.
+#    vectorbt: research/ only. streamlit, typer: apps/ only.
+# ---------------------------------------------------------------------------
+[importlinter:contract:no-app-or-research-libs-in-qp]
+name = qp never imports vectorbt, streamlit or typer
+type = forbidden
+source_modules =
+    qp
+forbidden_modules =
+    vectorbt
+    streamlit
+    typer
+
+# ---------------------------------------------------------------------------
+# 5. Pure foundation layers do no I/O.
+# ---------------------------------------------------------------------------
+[importlinter:contract:core-stats-no-io]
+name = qp.core and qp.stats do no I/O
+type = forbidden
+source_modules =
+    qp.core
+    qp.stats
+forbidden_modules =
+    sqlalchemy
+    psycopg
+    alembic
+    duckdb
+    pyarrow
+    httpx
+    requests
+    structlog
