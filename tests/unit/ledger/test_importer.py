@@ -255,3 +255,70 @@ def test_foreign_buy_with_try_fee() -> None:
     assert pos is not None
     assert (pos.cost, pos.cost_try) == (Decimal("101"), Decimal("4040"))
     assert plan.after.cash[("A", Currency("TRY"))] == Decimal("-40")
+
+
+# ----------------------------------------------------------------- review findings (2026-10-19)
+TRADE_HEADER = "account,type,trade_date,instrument,quantity,price,fee\n"
+
+
+@pytest.mark.parametrize(
+    ("header", "row", "message"),
+    [
+        # a Turkish decimal comma splits 12,50 into two fields
+        (TRADE_HEADER, "A,buy,2025-01-02,THYAO.BIST,100,12,50,5\n", "more fields"),
+        (TRADE_HEADER, "A,buy,2025-01-02,THYAO.BIST,100,12.50\n", "fewer fields"),
+        ("account,type,trade_date,currency,amount,fee\n", "A,deposit,2025-01-02,TRY,1000,25\n",
+         "does not use ['fee']"),
+        ("account,type,trade_date,currency,amount,to_currency,to_amount,fee\n",
+         "A,fx_conversion,2025-01-02,TRY,1000,USD,25,5\n", "does not use ['fee']"),
+        ("account,type,trade_date,currency,amount,instrument\n",
+         "A,opening_balance,2025-01-02,TRY,1000,\nA,deposit,2025-01-02,TRY,1,THYAO.BIST\n",
+         "does not use ['instrument']"),
+        ("account,type,trade_date,instrument,quantity,price,trade_time\n",
+         "A,buy,2025-01-02,THYAO.BIST,1,1,2025-03-05T10:00:00+03:00\n", "not on trade_date"),
+    ],
+)  # fmt: skip
+def test_malformed_or_inapplicable_values_are_rejected(header: str, row: str, message: str) -> None:
+    plan = run(row, header=header)
+    assert not plan.ok
+    assert any(message in e for e in plan.errors), plan.errors
+
+
+def test_duplicate_header_column_is_rejected() -> None:
+    plan = run("A,buy,2025-01-02,THYAO.BIST,1,10,99\n", header=TRADE_HEADER.replace("fee", "price"))
+    assert plan.errors == ["header: duplicated columns ['price']"]
+
+
+def test_dividend_fee_is_rejected_not_dropped() -> None:
+    header = "account,type,trade_date,instrument,ex_date,amount_per_share,withholding,fee\n"
+    existing = run("A,buy,2025-01-01,THYAO.BIST,100,10,\n", header=TRADE_HEADER).transactions
+    plan = run("A,cash_dividend,2025-01-10,THYAO.BIST,2025-01-09,1,15,3\n", header=header,
+               existing=existing)  # fmt: skip
+    assert any("does not use ['fee']" in e for e in plan.errors), plan.errors
+
+
+def test_interest_withholding_rate() -> None:
+    header = "account,type,trade_date,currency,amount,withholding_rate\n"
+    plan = run("A,interest,2025-01-02,TRY,100,0.15\n", header=header)
+    assert plan.ok, plan.errors
+    assert plan.after is not None
+    assert plan.after.income[0].withholding == Decimal("15.00")
+    assert plan.after.cash[("A", TRY)] == Decimal("85.00")
+
+
+def test_trade_time_is_checked_in_istanbul_time() -> None:
+    header = "account,type,trade_date,instrument,quantity,price,trade_time\n"
+    # 01:00 Istanbul on Jan 2 is still Jan 1 in UTC; the trade date is Istanbul's.
+    plan = run("A,buy,2025-01-02,THYAO.BIST,1,1,2025-01-02T01:00:00+03:00\n", header=header)
+    assert plan.ok, plan.errors
+
+
+def test_delisting_removes_the_holding_at_the_start_of_the_day() -> None:
+    header = "account,type,trade_date,instrument,quantity,price,amount\n"
+    plan = run(
+        "A,buy,2025-01-01,THYAO.BIST,100,10,\nA,delisting,2025-02-01,THYAO.BIST,,,50\n",
+        header=header,
+    )
+    assert plan.ok, plan.errors
+    assert plan.after is not None
+    assert plan.after.realizations[0].realized == Decimal("-950")

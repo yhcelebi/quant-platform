@@ -18,7 +18,15 @@ from typing import Protocol
 
 from sqlalchemy.orm import Session
 
-from qp.core import Currency, InstrumentId, Money, QPError, parse_utc, to_decimal
+from qp.core import (
+    Currency,
+    InstrumentId,
+    Money,
+    QPError,
+    istanbul_date,
+    parse_utc,
+    to_decimal,
+)
 from qp.ledger import builders as b
 from qp.ledger.domain import Account, LedgerError, Transaction, TxType
 from qp.ledger.engine import LedgerState, replay
@@ -35,6 +43,37 @@ COLUMNS = (
     "note",
 )  # fmt: skip
 REQUIRED = ("account", "type", "trade_date")
+COMMON = ("account", "type", "trade_date", "trade_time", "settle_date", "external_ref", "note")
+_CASH = ("currency", "amount", "fx_rate_try")
+_TRADE = ("instrument", "quantity", "price", "currency", "fee", "fee_currency", "fx_rate_try")
+_TRANSFER = ("transfer_id", "instrument", "quantity", "currency", "amount")
+_SHARE_COUNT = ("instrument", "currency", "ratio", "ex_date", "quantity", "known_time")
+_DIVIDEND = (
+    "instrument", "currency", "ex_date", "amount_per_share", "quantity", "gross",
+    "withholding", "withholding_rate", "net", "fx_rate_try", "known_time",
+)  # fmt: skip
+# Columns each type may fill. A value in any other column is an error, never ignored:
+# a fee on a deposit or a withholding on the wrong row would otherwise vanish silently.
+APPLICABLE: dict[TxType, tuple[str, ...]] = {
+    TxType.OPENING_BALANCE: ("instrument", "quantity", "amount", "currency", "fx_rate_try"),
+    TxType.DEPOSIT: _CASH,
+    TxType.WITHDRAWAL: _CASH,
+    TxType.FEE: _CASH,
+    TxType.TAX: _CASH,
+    TxType.INTEREST: (*_CASH, "withholding", "withholding_rate"),
+    TxType.BUY: _TRADE,
+    TxType.SELL: _TRADE,
+    TxType.FX_CONVERSION: ("currency", "amount", "to_currency", "to_amount"),
+    TxType.TRANSFER_OUT: _TRANSFER,
+    TxType.TRANSFER_IN: _TRANSFER,
+    TxType.SPLIT: _SHARE_COUNT,
+    TxType.BONUS_ISSUE: _SHARE_COUNT,
+    TxType.STOCK_DIVIDEND: _SHARE_COUNT,
+    TxType.RIGHTS_SUBSCRIPTION: (*_TRADE, "ratio", "ex_date", "known_time"),
+    TxType.CASH_DIVIDEND: _DIVIDEND,
+    TxType.MERGER: ("instrument", "new_instrument", "ratio", "quantity", "ex_date", "known_time"),
+    TxType.DELISTING: ("instrument", "currency", "amount", "fx_rate_try", "ex_date", "known_time"),
+}
 ZERO = Decimal(0)
 
 
@@ -70,13 +109,25 @@ class ImportPlan:
 
 
 class _Row:
-    def __init__(self, line: int, raw: dict[str, str], lookup: Lookup) -> None:
+    def __init__(self, line: int, raw: dict[str | None, object], lookup: Lookup) -> None:
         self.line = line
-        self.raw = {k: (v or "").strip() for k, v in raw.items() if k is not None}
+        if None in raw:
+            raise RowError(
+                f"more fields than the header has columns ({raw[None]!r} left over); "
+                "is a decimal comma or an unquoted comma in a note splitting a value?"
+            )
+        if any(v is None for v in raw.values()):
+            raise RowError("fewer fields than the header has columns")
+        self.raw = {str(k): str(v).strip() for k, v in raw.items()}
         self.lookup = lookup
 
     def has(self, name: str) -> bool:
         return bool(self.raw.get(name))
+
+    def only(self, allowed: tuple[str, ...], why: str) -> None:
+        extra = [k for k, v in self.raw.items() if v and k not in COMMON and k not in allowed]
+        if extra:
+            raise RowError(f"{why} does not use {extra}; leave them empty or use another row")
 
     def text(self, name: str, *, required: bool = True) -> str:
         value = self.raw.get(name, "")
@@ -176,6 +227,10 @@ def plan_import(
     if unknown or missing:
         plan.errors.append(f"header: unknown columns {unknown}, missing required {missing}")
         return plan
+    duplicated = sorted({h for h in header if header.count(h) > 1})
+    if duplicated:
+        plan.errors.append(f"header: duplicated columns {duplicated}")
+        return plan
     reader.fieldnames = header
 
     refs = set(existing_refs or set())
@@ -184,9 +239,8 @@ def plan_import(
     ctx = _Context(lookup, existing, built, actions, plan, file_name, now, rates or RateTable([]))
     for line, raw in enumerate(reader, start=2):
         plan.row_count += 1
-        row = _Row(line, raw, lookup)
         try:
-            tx = ctx.build(row)
+            tx = ctx.build(_Row(line, raw, lookup))
         except (QPError, ValueError, ArithmeticError) as exc:
             plan.errors.append(f"line {line}: {exc}")
             continue
@@ -256,14 +310,21 @@ class _Context:
             raise RowError(f"unknown type {row.raw.get('type')!r}") from exc
         if tx_type is TxType.REVERSAL:
             raise RowError("reversals are not imported; use `qp ledger reverse <id>`")
+        row.only(APPLICABLE[tx_type], f"type {tx_type.value}")
         trade_date = row.day("trade_date")
         assert trade_date is not None
+        trade_time = row.instant("trade_time")
+        if trade_time is not None and istanbul_date(trade_time) != trade_date:
+            raise RowError(
+                f"trade_time {row.raw['trade_time']} is not on trade_date {trade_date} "
+                "(Europe/Istanbul)"
+            )
         c = b.Common(
             account=account,
             trade_date=trade_date,
             recorded_at=self.now,
             sequence=row.line,
-            trade_time=row.instant("trade_time"),
+            trade_time=trade_time,
             settle_date=row.day("settle_date", required=False),
             external_ref=row.text("external_ref", required=False) or None,
             note=row.text("note", required=False),
@@ -277,6 +338,7 @@ class _Context:
         if row.has("instrument"):
             inst = row.instrument()
             cur = row.instrument_currency(inst)
+            row.only(APPLICABLE[TxType.OPENING_BALANCE], "opening_balance (position)")
             return b.opening_position(
                 c,
                 inst.id,
@@ -285,15 +347,26 @@ class _Context:
                 row.dec("amount"),
                 fx_rate_try=row.opt_dec("fx_rate_try"),
             )
+        row.only(("currency", "amount"), "opening_balance (cash)")
         return b.opening_cash(c, row.currency(), row.dec("amount"))
 
     def _cash(self, row: _Row, c: b.Common, t: TxType) -> Transaction:
+        currency = row.currency()
+        amount = row.dec("amount")
+        withholding = row.dec("withholding", required=False)
+        rate = row.opt_dec("withholding_rate")
+        if rate is not None:
+            if row.has("withholding"):
+                raise RowError("give 'withholding' or 'withholding_rate', not both")
+            if not (ZERO <= rate <= 1):
+                raise RowError("withholding_rate must be a fraction in [0, 1]")
+            withholding = Money(amount * rate, currency).quantize().amount
         return b.cash_flow(
             c,
             t,
-            row.currency(),
-            row.dec("amount"),
-            withholding=row.dec("withholding", required=False),
+            currency,
+            amount,
+            withholding=withholding,
             fx_rate_try=row.opt_dec("fx_rate_try"),
         )
 
@@ -324,10 +397,12 @@ class _Context:
     def _transfer(self, row: _Row, c: b.Common, t: TxType) -> Transaction:
         transfer_id = row.text("transfer_id")
         if row.has("instrument"):
+            row.only(("transfer_id", "instrument", "quantity", "currency"), f"{t.value} (shares)")
             inst = row.instrument()
             return b.securities_transfer(
                 c, t, transfer_id, inst.id, row.instrument_currency(inst), row.dec("quantity")
             )
+        row.only(("transfer_id", "currency", "amount"), f"{t.value} (cash)")
         return b.cash_transfer(c, t, transfer_id, row.currency(), row.dec("amount"))
 
     _transfer_out = _transfer_in = _transfer
@@ -444,6 +519,10 @@ class _Context:
     def _merger(self, row: _Row, c: b.Common, _: TxType) -> Transaction:
         old = row.instrument()
         new = row.instrument("new_instrument")
+        if new.currency != old.currency:
+            raise RowError(
+                f"cross-currency merger ({old.currency} -> {new.currency}) is not supported"
+            )
         ca = self._new_action(
             row,
             c,
@@ -467,7 +546,8 @@ class _Context:
         inst = row.instrument()
         cur = row.instrument_currency(inst)
         ca = self._new_action(row, c, CorporateActionType.DELISTING, instrument=inst.id)
-        held = self.held_before(c.account, inst.id, c.trade_date + timedelta(days=1))
+        # Corporate actions apply at the start of the day (engine order), before that day's trades.
+        held = self.held_before(c.account, inst.id, c.trade_date)
         return b.delisting(
             c,
             ca,
