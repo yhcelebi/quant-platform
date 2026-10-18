@@ -1,0 +1,6 @@
+# Dated tax and commission rates (fractions, as strings). See qp/reference/rates.py.
+#
+# Intentionally empty: rates are added only with a cited official source, confirmed by the
+# owner. Until then, dividend rows in ledger imports must carry the actual withholding
+# (amount or rate) from the broker statement.
+rates: []
