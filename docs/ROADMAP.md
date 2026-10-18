@@ -6,7 +6,7 @@ Each phase must meet its exit criteria before the next starts. One phase per ses
 
 | Phase | Name                         | Status       | Exit criteria met | Notes |
 |-------|------------------------------|--------------|-------------------|-------|
-| 0     | Foundation                   | not started  | —                 | Project docs, `.importlinter`, reference cases written (session 1, step 1) |
+| 0     | Foundation                   | done         | yes (2026-10-18)  | `make check` green in CI ([run 39115989762](https://github.com/yhcelebi/quant-platform/actions/runs/39115989762)); local `db-up`/`migrate` not yet run on owner machine (Docker was off) |
 | 1     | Ledger & portfolio           | not started  | —                 |       |
 | 2     | Data lake & connectors       | not started  | —                 |       |
 | 3     | Performance & risk           | not started  | —                 |       |
