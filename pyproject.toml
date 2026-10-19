@@ -31,6 +31,7 @@ dependencies = [
     "plotly>=7.1",
     "typer>=0.27",
     "apscheduler>=3.11,<4",
+    "exchange-calendars>=4.13.2",
 ]
 
 [dependency-groups]
@@ -128,7 +129,7 @@ module = ["qp.core", "qp.core.*", "qp.platform", "qp.platform.*", "qp.ledger", "
 strict = true
 
 [[tool.mypy.overrides]]
-module = ["apscheduler.*", "streamlit.*"]
+module = ["apscheduler.*", "streamlit.*", "pyarrow", "pyarrow.*"]
 ignore_missing_imports = true
 
 # --------------------------------------------------------------------------- pytest
