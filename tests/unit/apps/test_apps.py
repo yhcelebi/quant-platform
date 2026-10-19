@@ -58,14 +58,22 @@ def test_terminal_every_page_renders(
 
 
 def test_workers_once(in_tmp_cwd: Path, capsys: pytest.CaptureFixture[str]) -> None:
-    assert workers_main(["--once"]) == 0
+    assert workers_main(["--once", "--job", "heartbeat"]) == 0  # never the network in tests
     events = [json.loads(line)["event"] for line in capsys.readouterr().err.splitlines()]
     assert "workers.heartbeat" in events
+    assert "workers.tcmb_fx" not in events
 
 
-def test_workers_scheduler_has_heartbeat(config_dir: Path) -> None:
+def test_workers_schedule(config_dir: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     scheduler = build_scheduler(load_settings(config_dir=config_dir, env_file=None))
-    assert [j.id for j in scheduler.get_jobs()] == ["heartbeat"]
+    assert [j.id for j in scheduler.get_jobs()] == ["heartbeat", "tcmb_fx", "tcmb_fx_retry"]
+    tcmb = scheduler.get_job("tcmb_fx")
+    assert tcmb is not None
+    assert str(tcmb.trigger.timezone) == "Europe/Istanbul"
+    monkeypatch.setenv("QP_SOURCES__FRED__API_KEY", "k")  # keyed sources join the schedule
+    keyed = build_scheduler(load_settings(config_dir=config_dir, env_file=None))
+    assert "fred" in [j.id for j in keyed.get_jobs()]
+    assert "evds" not in [j.id for j in keyed.get_jobs()]  # no key and no series
 
 
 def test_trader_paper_runs(in_tmp_cwd: Path) -> None:
