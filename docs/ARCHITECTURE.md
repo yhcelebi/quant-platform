@@ -41,7 +41,8 @@ data/lake/derived/                                           adjusted prices, re
 data/lake/results/{backtests,studies}/{id}/                  research and backtest outputs
 ```
 
-- Every row of external data carries `source`, `valid_time`, `known_time`.
+- Every row of external data carries `source`, `valid_time`, `known_time`, plus
+  `known_time_basis` and `fetched_at`; queries take `as_of` (ADR 0007).
 - Unadjusted prices are always kept. Adjusted prices are derived from `ref.corporate_actions`.
 - Every result records: git commit, config hash, dataset snapshot (max `known_time`),
   parameters, seed and package versions.

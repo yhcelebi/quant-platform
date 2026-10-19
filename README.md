@@ -20,7 +20,8 @@ make terminal     # Streamlit UI
 ```
 
 Other targets: `make help`. Importing your ledger: [runbook](docs/runbooks/ledger-import.md)
-and the [CSV format](docs/ledger-csv-format.md).
+and the [CSV format](docs/ledger-csv-format.md). Market and macro data (TCMB FX, EVDS, FRED):
+[data runbook](docs/runbooks/data.md).
 
 ## Safety
 

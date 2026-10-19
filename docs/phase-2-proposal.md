@@ -1,8 +1,8 @@
 # Phase 2 proposal — data lake and connectors
 
-Status: **proposal, not started.** Nothing here is implemented. Per AGENTS.md, Phase 2 starts
-only after Phase 1's exit criteria are met (holdings reconcile with broker statements) and the
-owner says "go". Open questions are in `docs/owner-questions.md` (section "Phase 2").
+Status: **in progress** since the owner's "go" on 2026-10-19 (Phase 1's reconcile still open).
+What was built and what is open: docs/ROADMAP.md and ADRs 0007-0009. Open questions:
+`docs/owner-questions.md`.
 
 ## Goal
 

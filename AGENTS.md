@@ -120,6 +120,9 @@ Defined in the `Makefile` (built in Phase 0):
 | `uv run qp ledger list / reverse ID --note ...` | list / correct (append-only)            |
 | `uv run qp ledger reconcile FILE --as-of DATE` | compare with a broker statement          |
 | `uv run qp portfolio show [--as-of] [--currency] [--method] [--known-at]` | holdings  |
+| `uv run qp data fetch tcmb\|evds\|fred [--since] [--until] [--series]` | fill the lake   |
+| `uv run qp data quality / status / evds-series CODE` | checks, freshness, EVDS code lookup |
+| `uv run qp ref actions list / accept ID --note / reject ID --note` | corporate-action queue |
 
 Local PostgreSQL 16 runs in Docker on `127.0.0.1:5433` (ADR 0002). Integration tests skip
 without a database locally; CI sets `QP_REQUIRE_DB=1` so they must run there.

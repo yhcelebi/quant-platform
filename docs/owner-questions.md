@@ -39,9 +39,11 @@ Recommended answers are marked; "ok" accepts the recommendation.
 6. **Negative cash.** It's now a warning, not an error, because margin or overdraft can be
    real. *Recommended: keep as a warning.* Should it be an error for some accounts?
 
-## Phase 2 — decisions (only after Phase 1 is done)
+## Phase 2 — status after your "go" (2026-10-19)
 
-Read `docs/phase-2-proposal.md` first. Nothing has been built.
+Built and running; see docs/ROADMAP.md, ADRs 0007-0009 and docs/runbooks/data.md. The
+recommended defaults are in effect for Q10, Q11 and Q12 (change any of them by answering
+below). Q7, Q8 and Q14 are not built until you answer. Q9 blocks the FRED and EVDS runs.
 
 7. **Yahoo Finance (yfinance)** for BIST and US end-of-day prices: unofficial; Yahoo's terms
    are not confirmed to allow it. Use it as a best-effort, personal-use source? Or keep
@@ -50,11 +52,13 @@ Read `docs/phase-2-proposal.md` first. Nothing has been built.
 8. **TEFAS fund prices** via `tefas-crawler`: no documented API or terms found. Use it,
    politely rate-limited? Only matters if you hold funds.
 
-9. **API keys.** Register and put them in `.env` (never in chat or git):
-   - TCMB EVDS: TÜFE for real returns, deposit rates. It's EVDS 3, in beta since January 2026.
-   - FRED: US macro.
+9. **API keys** (blocks FRED and EVDS). Register and put them in `.env`, never in chat or git:
+   - TCMB EVDS (TÜFE for real returns, deposit rates): evds3.tcmb.gov.tr → Benim Sayfam →
+     Profilim → API Key Kopyala → `QP_SOURCES__EVDS__API_KEY=...`
+   - FRED (US macro): fredaccount.stlouisfed.org → API Keys → `QP_SOURCES__FRED__API_KEY=...`
 
-   I'll give the exact variable names when I build the connectors.
+   Then run `uv run qp data fetch fred` and `uv run qp data evds-series TP.TUKFIY2025.GENEL`.
+   Or say "keys are in" and I'll do the first runs and confirm the TÜFE code.
 
 10. **FX convention for valuation.** TCMB publishes buying and selling rates. *Recommended:
     the döviz alış (ForexBuying) rate, which is also the tax convention.* Alternative: the
@@ -62,8 +66,8 @@ Read `docs/phase-2-proposal.md` first. Nothing has been built.
 
 11. **Backfilled history and `known_time`.** A price for 2023 fetched today was published in
     2023, but we only saw it today. *Recommended:* store the documented publication time,
-    labelled `assumed_publication`, and keep observed fetches separately. Details are in the
-    proposal. This is ADR 0007.
+    labelled `schedule` (in effect now), and keep the fetch time in `fetched_at`. Details:
+    ADR 0007.
 
 12. **Manual vs. fetched prices.** *Recommended: your manual values win, and every row shows
     its source.*
@@ -71,3 +75,8 @@ Read `docs/phase-2-proposal.md` first. Nothing has been built.
 13. **KAP, EDGAR and RSS** are deferred to Phases 4–5, where they're used. ok?
 
 14. **Crypto.** Do you hold any? If not, ccxt is skipped in Phase 2.
+
+15. **Docker Desktop stopped twice today** (the database went down mid-session). I
+    restarted it with `open -a Docker` each time. Do you quit it, or does it crash or sleep?
+    If you want the database always on, enable "Start Docker Desktop when you sign in" and
+    turn off Resource Saver in Docker Desktop settings.
