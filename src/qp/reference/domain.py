@@ -147,7 +147,7 @@ def price_adjustment_factor(action: CorporateAction) -> Decimal:
     """Factor applied to prices before the ex-date so they are comparable after it.
 
     Bonus issue / stock dividend with ratio k: 1 / (1 + k). Split with ratio r: 1 / r.
-    Cash dividends need the pre-ex close price and are handled with price data (phase 2).
+    Cash dividends need the pre-ex close price: see qp.data.adjust (total-return series).
     """
     if action.action_type in SHARE_COUNT_ACTIONS:
         return 1 / action.share_factor
