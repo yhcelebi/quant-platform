@@ -61,6 +61,45 @@ class ManualDataSettings(_Section):
     dir: Path = Path("data/manual")
 
 
+class FxRateKind(StrEnum):
+    """Which TCMB indicative rate values positions and cash (ADR 0008)."""
+
+    FOREX_BUYING = "forex_buying"
+    FOREX_SELLING = "forex_selling"
+    BANKNOTE_BUYING = "banknote_buying"
+    BANKNOTE_SELLING = "banknote_selling"
+
+
+class TcmbSettings(_Section):
+    """TCMB daily indicative FX rates (public XML archive, no key)."""
+
+    enabled: bool = True
+    rate_kind: FxRateKind = FxRateKind.FOREX_BUYING
+    min_interval_s: float = Field(default=1.0, ge=0.5)
+
+
+class EvdsSettings(_Section):
+    """TCMB EVDS 3 web service. The key is sent in the ``key`` request header."""
+
+    api_key: SecretStr | None = None
+    base_url: str = "https://evds3.tcmb.gov.tr/igmevdsms-dis/"
+    min_interval_s: float = Field(default=2.0, ge=0.5)
+
+
+class FredSettings(_Section):
+    """FRED / ALFRED (St. Louis Fed). The key is a query parameter, so URLs are redacted."""
+
+    api_key: SecretStr | None = None
+    min_interval_s: float = Field(default=1.0, ge=0.5)
+
+
+class SourcesSettings(_Section):
+    tcmb: TcmbSettings = TcmbSettings()
+    evds: EvdsSettings = EvdsSettings()
+    fred: FredSettings = FredSettings()
+    user_agent: str = "qp-personal/0.1 (personal research platform)"
+
+
 class TelegramSettings(_Section):
     bot_token: SecretStr | None = None
     chat_id: str | None = None
@@ -91,6 +130,7 @@ class Settings(BaseSettings):
     db: DbSettings = DbSettings()
     lake: LakeSettings = LakeSettings()
     manual: ManualDataSettings = ManualDataSettings()
+    sources: SourcesSettings = SourcesSettings()
     telegram: TelegramSettings = TelegramSettings()
     log: LogSettings = LogSettings()
 
@@ -119,9 +159,13 @@ class Settings(BaseSettings):
 
     def secret_values(self) -> list[str]:
         """Plain secret values, so the logging redactor can scrub them from messages."""
-        values = [self.db.password.get_secret_value()]
-        if self.telegram.bot_token is not None:
-            values.append(self.telegram.bot_token.get_secret_value())
+        values: list[str] = []
+        for path in sorted(_secret_paths(type(self))):
+            node: Any = self
+            for part in path:
+                node = getattr(node, part)
+            if isinstance(node, SecretStr):
+                values.append(node.get_secret_value())
         return [v for v in values if v]
 
 

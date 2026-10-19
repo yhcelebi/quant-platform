@@ -79,6 +79,8 @@ src = ["src", "."]
 extend-include = ["*.ipynb"]
 
 [tool.ruff.lint]
+# Turkish dotless/dotted i appear in source names and terms (döviz alış, TÜFE, Bayramı).
+allowed-confusables = ["ı", "İ"]
 select = [
     "E", "W", "F", "I", "UP", "B", "SIM", "C4", "RUF", "PT", "N",
     "DTZ",    # naive datetimes are bugs (rule 4)

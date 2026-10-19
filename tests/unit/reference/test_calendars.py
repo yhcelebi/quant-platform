@@ -29,10 +29,16 @@ def test_bist_2026_religious_holidays_and_half_days() -> None:
     assert previous_session("BIST", date(2026, 10, 29)) == date(2026, 10, 28)
 
 
-def test_tefas_and_tcmb_follow_turkish_business_days() -> None:
-    assert sessions("TEFAS", date(2026, 3, 18), date(2026, 3, 24)) == sessions(
-        "TCMB", date(2026, 3, 18), date(2026, 3, 24)
-    )
+def test_tcmb_publishes_on_full_turkish_business_days_only() -> None:
+    # Verified against the TCMB archive: no bulletin on the half days 19 Mar and 26 May 2026.
+    assert sessions("TCMB", date(2026, 3, 18), date(2026, 3, 24)) == [
+        date(2026, 3, 18),
+        date(2026, 3, 23),
+        date(2026, 3, 24),
+    ]
+    assert not is_session("TCMB", date(2026, 5, 26))
+    assert is_session("TEFAS", date(2026, 3, 19))
+    assert previous_session("TCMB", date(2026, 3, 23)) == date(2026, 3, 18)
 
 
 def test_us_and_crypto() -> None:

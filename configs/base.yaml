@@ -14,6 +14,16 @@ lake:
 manual:
   dir: data/manual      # prices.csv and fx.csv you maintain (phase 1 valuation)
 
+sources:                # phase 2 connectors; API keys only via env/.env (QP_SOURCES__*__API_KEY)
+  tcmb:
+    enabled: true
+    rate_kind: forex_buying   # TCMB döviz alış; values FX positions and cash (ADR 0008)
+    min_interval_s: 1.0       # at most one request per second to tcmb.gov.tr
+  evds:
+    min_interval_s: 2.0
+  fred:
+    min_interval_s: 1.0
+
 log:
   level: INFO
   json_format: true

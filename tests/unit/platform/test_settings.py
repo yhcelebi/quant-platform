@@ -130,3 +130,16 @@ def test_live_ack_is_not_a_settings_field(cfg: Path, monkeypatch: pytest.MonkeyP
     monkeypatch.setenv("QP_LIVE_TRADING", "I_UNDERSTAND_THE_RISK")
     s = load_settings(config_dir=cfg, env_file=None)
     assert "live_trading" not in s.model_dump()
+
+
+def test_source_api_keys_come_only_from_env(cfg: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    s = load_settings(config_dir=cfg, env_file=None)
+    assert s.sources.evds.api_key is None
+    assert s.sources.tcmb.rate_kind == "forex_buying"
+    monkeypatch.setenv("QP_SOURCES__EVDS__API_KEY", "evds-secret")
+    monkeypatch.setenv("QP_SOURCES__FRED__API_KEY", "fred-secret")
+    s = load_settings(config_dir=cfg, env_file=None)
+    assert sorted(s.secret_values()) == ["evds-secret", "fred-secret"]  # redacted from logs
+    write(cfg / "base.yaml", "sources:\n  fred:\n    api_key: oops\n")
+    with pytest.raises(ConfigError, match="QP_SOURCES__FRED__API_KEY"):
+        load_settings(config_dir=cfg, env_file=None)

@@ -6,6 +6,7 @@ a lake-backed implementation behind the same interface.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date, datetime
 from decimal import Decimal
@@ -52,3 +53,27 @@ def try_rate(
     if currency == TRY:
         return FxPoint(TRY, on, Decimal(1), "identity", as_of)
     return market.fx_try(currency, on, as_of=as_of)
+
+
+class LayeredMarketData:
+    """Several sources behind one interface: the point with the latest valid date wins, and
+    on the same date the earlier source wins (manual entries before fetched data)."""
+
+    def __init__(self, sources: Sequence[MarketData]) -> None:
+        self.sources = list(sources)
+
+    def price(self, instrument: InstrumentId, on: date, *, as_of: datetime) -> PricePoint | None:
+        points = [s.price(instrument, on, as_of=as_of) for s in self.sources]
+        return _newest([p for p in points if p is not None])
+
+    def fx_try(self, currency: Currency, on: date, *, as_of: datetime) -> FxPoint | None:
+        points = [s.fx_try(currency, on, as_of=as_of) for s in self.sources]
+        return _newest([p for p in points if p is not None])
+
+
+def _newest[P: (PricePoint, FxPoint)](points: list[P]) -> P | None:
+    best: P | None = None
+    for p in points:  # strict > keeps the earlier source on ties
+        if best is None or p.valid_date > best.valid_date:
+            best = p
+    return best

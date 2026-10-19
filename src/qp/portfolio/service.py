@@ -5,14 +5,26 @@ from __future__ import annotations
 from collections.abc import Collection
 from datetime import date, datetime
 
+from qp.data.lake import CleanStore
+from qp.data.lake_market import LakeMarketData
 from qp.data.manual import ManualMarketData
+from qp.data.market import LayeredMarketData, MarketData
 from qp.ledger.domain import Account
 from qp.ledger.engine import replay
 from qp.ledger.repo import LedgerRepository
 from qp.platform.db import Database
+from qp.platform.lake import LakePaths
 from qp.platform.settings import Settings
 from qp.portfolio.holdings import CostMethod, HoldingsReport, build_report
 from qp.portfolio.reconcile import Mismatch, reconcile
+
+
+def market_data(settings: Settings) -> MarketData:
+    """Owner-maintained manual values first, then the lake (newest date wins; ties: manual)."""
+    lake = LakeMarketData(
+        CleanStore(LakePaths(settings.lake.root)), rate_kind=settings.sources.tcmb.rate_kind
+    )
+    return LayeredMarketData([ManualMarketData.from_dir(settings.manual.dir), lake])
 
 
 def load_report(
@@ -24,7 +36,7 @@ def load_report(
     method: CostMethod = CostMethod.AVERAGE,
     stale_after_days: int = 7,
 ) -> tuple[HoldingsReport, list[Account]]:
-    market = ManualMarketData.from_dir(settings.manual.dir)
+    market = market_data(settings)
     db = Database.from_settings(settings.db)
     try:
         with db.session() as session:
