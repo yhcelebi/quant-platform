@@ -45,6 +45,7 @@ dev = [
     "pre-commit>=4.7",
     "types-pyyaml>=6.0",
     "scipy-stubs>=1.18.1.1",
+    "pandas-stubs>=3.0.5.260914",
 ]
 research = [
     "vectorbt>=1.1",
@@ -129,7 +130,7 @@ module = ["qp.core", "qp.core.*", "qp.platform", "qp.platform.*", "qp.ledger", "
 strict = true
 
 [[tool.mypy.overrides]]
-module = ["apscheduler.*", "streamlit.*", "pyarrow", "pyarrow.*"]
+module = ["apscheduler.*", "streamlit.*", "pyarrow", "pyarrow.*", "exchange_calendars", "exchange_calendars.*"]
 ignore_missing_imports = true
 
 # --------------------------------------------------------------------------- pytest
