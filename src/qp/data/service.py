@@ -5,14 +5,19 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
+from decimal import Decimal
 from typing import Any
+
+from sqlalchemy import func, select
 
 from qp.core import Clock, QPError, SystemClock, istanbul_date
 from qp.data.connectors import evds, fred, tcmb
 from qp.data.connectors.http import HttpClient
 from qp.data.connectors.tcmb import FetchReport
 from qp.data.lake import CleanStore, Dataset, RawStore
+from qp.data.lake_market import plain
 from qp.data.quality import CheckResult, QualityStatus, check_tcmb_fx, save_results
+from qp.data.quality.models import DataQualityResultRow
 from qp.platform.db import Database
 from qp.platform.jobs import JobRun, job_run
 from qp.platform.lake import LakePaths
@@ -205,4 +210,39 @@ def dataset_status(settings: Settings) -> list[DatasetStatus]:
                     stats["last_fetched"],
                 )
             )
+    return out
+
+
+def latest_quality(db: Database) -> list[DataQualityResultRow]:
+    """Results of the most recent quality run."""
+    with db.session() as s:
+        last = s.scalar(select(func.max(DataQualityResultRow.job_run_id)))
+        if last is None:
+            return []
+        rows = list(
+            s.scalars(
+                select(DataQualityResultRow)
+                .where(DataQualityResultRow.job_run_id == last)
+                .order_by(DataQualityResultRow.id)
+            )
+        )
+        s.expunge_all()
+        return rows
+
+
+def fx_history(
+    settings: Settings, currencies: tuple[str, ...], start: date, *, as_of: datetime
+) -> dict[str, list[tuple[date, Decimal]]]:
+    """TCMB rate (configured kind, per 1 unit) per currency since ``start``, known at as_of."""
+    _, clean = lake(settings)
+    rows = clean.query(
+        tcmb.DATASET,
+        as_of=as_of,
+        where={"rate_kind": settings.sources.tcmb.rate_kind},
+        valid_from=start,
+    )
+    out: dict[str, list[tuple[date, Decimal]]] = {c: [] for c in currencies}
+    for r in rows:
+        if r["currency"] in out:
+            out[r["currency"]].append((r["valid_date"], plain(r["value"] / Decimal(r["unit"]))))
     return out

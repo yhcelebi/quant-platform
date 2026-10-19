@@ -7,6 +7,7 @@ from pathlib import Path
 
 import httpx
 import pytest
+from streamlit.testing.v1 import AppTest
 from typer.testing import CliRunner
 
 from apps.cli.common import console
@@ -74,3 +75,11 @@ def test_data_fetch_status_quality(
     )
     assert point is not None
     assert (point.valid_date, str(point.rate_try)) == (date(2026, 10, 16), "40.1")
+
+    # the Data page shows the lake, the FX chart and the stored quality results
+    at = AppTest.from_file(str(REPO / "apps" / "terminal" / "app.py"), default_timeout=30).run()
+    at.switch_page("pages/data.py").run()
+    assert not at.exception
+    assert not at.error
+    assert any("checks are not ok" in w.value for w in at.warning)  # EUR is missing
+    assert "No TCMB rates" not in " ".join(i.value for i in at.info)

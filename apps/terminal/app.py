@@ -15,6 +15,7 @@ PAGES: list[tuple[str, str, str]] = [
     ("performance.py", "Performance", ":material/trending_up:"),
     ("risk.py", "Risk", ":material/shield:"),
     ("macro.py", "Macro", ":material/public:"),
+    ("data.py", "Data", ":material/database:"),
     ("news.py", "News", ":material/newspaper:"),
     ("research.py", "Research", ":material/science:"),
     ("backtests.py", "Backtests", ":material/history:"),
