@@ -9,7 +9,9 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy.engine import Connection
 
+import qp.data.quality.models
 import qp.ledger.models
+import qp.platform.jobs
 import qp.reference.models
 from qp.platform.db import SCHEMAS, Base, create_db_engine, database_url
 from qp.platform.settings import load_settings
@@ -20,7 +22,7 @@ if config.config_file_name is not None and not config.attributes.get("skip_loggi
     fileConfig(config.config_file_name)
 
 target_metadata = Base.metadata
-_ = qp.ledger.models
+_ = (qp.ledger.models, qp.data.quality.models, qp.platform.jobs)
 
 
 def include_name(name: str | None, type_: str, parent_names: object) -> bool:

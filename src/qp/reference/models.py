@@ -117,3 +117,44 @@ class CorporateActionRow(Base):
         DateTime(timezone=True), server_default=func.now()
     )
     note: Mapped[str] = mapped_column(Text, server_default="")
+
+
+CANDIDATE_STATUSES = ("pending", "accepted", "rejected")
+
+
+class CorporateActionCandidateRow(Base):
+    """Review queue: an action a data source reports that ``ref.corporate_actions`` lacks.
+
+    Never used for prices or the ledger. Accepting one inserts a normal (append-only)
+    corporate action and links it here; only ``status``, ``decided_at``, ``note`` and
+    ``action_id`` ever change.
+    """
+
+    __tablename__ = "corporate_action_candidates"
+    __table_args__ = (
+        UniqueConstraint(
+            "source", "instrument_id", "action_type", "ex_date", name="uq_action_candidates_key"
+        ),
+        CheckConstraint(_in("action_type", ACTION_TYPES), name="action_type"),
+        CheckConstraint(_in("status", CANDIDATE_STATUSES), name="status"),
+        CheckConstraint("ratio IS NULL OR ratio > 0", name="ratio_positive"),
+        CheckConstraint("amount_per_share IS NULL OR amount_per_share > 0", name="amount_positive"),
+        CheckConstraint(
+            "(status = 'accepted') = (action_id IS NOT NULL)", name="accepted_has_action"
+        ),
+        {"schema": "ref"},
+    )
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    instrument_id: Mapped[str] = mapped_column(ForeignKey("ref.instruments.id"))
+    action_type: Mapped[str] = mapped_column(Text)
+    ex_date: Mapped[date] = mapped_column(Date)
+    ratio: Mapped[Decimal | None] = mapped_column(Numeric)
+    amount_per_share: Mapped[Decimal | None] = mapped_column(Numeric)
+    currency: Mapped[str | None] = mapped_column(String(3))
+    source: Mapped[str] = mapped_column(Text)
+    reported_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    status: Mapped[str] = mapped_column(Text, server_default="pending")
+    decided_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    note: Mapped[str] = mapped_column(Text, server_default="")
+    action_id: Mapped[int | None] = mapped_column(ForeignKey("ref.corporate_actions.id"))
