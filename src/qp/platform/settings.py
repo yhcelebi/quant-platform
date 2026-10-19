@@ -15,6 +15,7 @@ import hashlib
 import json
 import os
 from collections.abc import Mapping
+from datetime import date
 from enum import StrEnum
 from pathlib import Path
 from typing import Any
@@ -84,6 +85,8 @@ class EvdsSettings(_Section):
     api_key: SecretStr | None = None
     base_url: str = "https://evds3.tcmb.gov.tr/igmevdsms-dis/"
     min_interval_s: float = Field(default=2.0, ge=0.5)
+    series: tuple[str, ...] = ()
+    start: date = date(2015, 1, 1)
 
 
 class FredSettings(_Section):
@@ -91,6 +94,7 @@ class FredSettings(_Section):
 
     api_key: SecretStr | None = None
     min_interval_s: float = Field(default=1.0, ge=0.5)
+    series: tuple[str, ...] = ("CPIAUCSL", "DGS10", "DFF")
 
 
 class SourcesSettings(_Section):

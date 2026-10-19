@@ -10,7 +10,7 @@ from rich.console import Console
 from rich.table import Table
 
 import qp
-from apps.cli import ledger_cmd, portfolio_cmd, ref_cmd
+from apps.cli import data_cmd, ledger_cmd, portfolio_cmd, ref_cmd
 from qp.core.errors import ConfigError
 from qp.platform import init_platform
 from qp.platform.health import Status, run_checks
@@ -19,6 +19,7 @@ app = typer.Typer(no_args_is_help=True, help="qp — personal quant platform.")
 app.add_typer(ref_cmd.app, name="ref")
 app.add_typer(ledger_cmd.app, name="ledger")
 app.add_typer(portfolio_cmd.app, name="portfolio")
+app.add_typer(data_cmd.app, name="data")
 console = Console()
 
 _STYLE = {Status.OK: "green", Status.WARN: "yellow", Status.FAIL: "red"}

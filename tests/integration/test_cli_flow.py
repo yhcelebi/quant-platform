@@ -19,12 +19,15 @@ REPO = Path(__file__).resolve().parents[2]
 EX = REPO / "docs" / "examples"
 
 
-def test_cli_workflow(migrated_db: Database, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_cli_workflow(
+    migrated_db: Database, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
     url = migrated_db.engine.url
     for key, value in {
         "QP_DB__HOST": url.host, "QP_DB__PORT": str(url.port), "QP_DB__NAME": url.database,
         "QP_DB__USER": url.username, "QP_DB__PASSWORD": url.password,
         "QP_CONFIG_DIR": str(REPO / "configs"), "QP_MANUAL__DIR": str(EX),
+        "QP_LAKE__ROOT": str(tmp_path / "lake"),  # never the real lake
     }.items():  # fmt: skip
         monkeypatch.setenv(key, str(value))
     monkeypatch.setattr(console, "width", 200)  # tables must not wrap numbers in narrow terminals
@@ -64,9 +67,9 @@ def test_cli_workflow(migrated_db: Database, monkeypatch: pytest.MonkeyPatch) ->
 
 
 def test_terminal_portfolio_page_shows_ledger(
-    migrated_db: Database, monkeypatch: pytest.MonkeyPatch
+    migrated_db: Database, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    test_cli_workflow(migrated_db, monkeypatch)  # populate via the CLI (incl. one reversal)
+    test_cli_workflow(migrated_db, monkeypatch, tmp_path)  # populate via the CLI (+ a reversal)
     at = AppTest.from_file(str(REPO / "apps" / "terminal" / "app.py"), default_timeout=30).run()
     at.switch_page("pages/portfolio.py").run()
     at.date_input[0].set_value(date(2025, 1, 14)).run()

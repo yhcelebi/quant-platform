@@ -21,8 +21,14 @@ sources:                # phase 2 connectors; API keys only via env/.env (QP_SOU
     min_interval_s: 1.0       # at most one request per second to tcmb.gov.tr
   evds:
     min_interval_s: 2.0
+    start: 2015-01-01
+    # Series codes to fetch. Empty until confirmed with a key (`qp data evds-series CODE`):
+    # TP.FG.J0 (TÜFE 2003=100) is archived since TÜİK's 2025=100 rebase; candidates are
+    # TP.TUKFIY2025.GENEL and TP.GENENDEKS.T1. Deposit rates: TP.TRY.MT01..MT06.
+    series: []
   fred:
     min_interval_s: 1.0
+    series: [CPIAUCSL, DGS10, DFF]   # US CPI (SA), 10y Treasury, Fed funds effective
 
 log:
   level: INFO
