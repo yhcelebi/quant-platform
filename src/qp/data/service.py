@@ -116,6 +116,25 @@ def fetch_fred(
     return report
 
 
+def fetch_fred_calendar(
+    settings: Settings, db: Database, *, clock: Clock | None = None
+) -> FetchReport:
+    """FRED release dates from 30 days ago on (future dates included) into the calendar."""
+    clock = clock or SystemClock()
+    key = _key(settings, "fred")
+    raw, clean = lake(settings)
+    start = istanbul_date(clock.now()) - timedelta(days=30)
+    with (
+        job_run(db, "fetch:fred_calendar", secrets=settings.secret_values()) as run,
+        http_client(settings, settings.sources.fred.min_interval_s) as client,
+    ):
+        report = fred.fetch_release_dates(
+            client, raw, clean, start=start, api_key=key, now=clock.now
+        )
+        _record(run, report, "release dates: ")
+    return report
+
+
 def fetch_evds(
     settings: Settings,
     db: Database,

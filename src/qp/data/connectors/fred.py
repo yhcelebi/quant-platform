@@ -28,6 +28,7 @@ from zoneinfo import ZoneInfo
 import pyarrow as pa
 
 from qp.core import QPError, ensure_utc, to_decimal
+from qp.data.calendar import DATASET as CALENDAR
 from qp.data.connectors.http import FetchError, HttpClient
 from qp.data.connectors.tcmb import FetchReport
 from qp.data.lake import CleanStore, Dataset, RawStore, Row
@@ -173,4 +174,103 @@ def fetch_series(
                 break
             offset += len(page)
     log.info("fred.fetch", series=list(series), rows=report.rows_written, errors=len(report.errors))
+    return report
+
+
+# --------------------------------------------------------------------------- release dates
+RELEASE_DATES_URL = "https://api.stlouisfed.org/fred/releases/dates"
+
+
+def release_dates_url(api_key: str, start: date, offset: int) -> tuple[str, str]:
+    """``fred/releases/dates`` with future dates (``include_release_dates_with_no_data``),
+    ascending, 1000 per page (docs read 2026-10-25)."""
+    params = {
+        "file_type": "json",
+        "realtime_start": start.isoformat(),
+        "include_release_dates_with_no_data": "true",
+        "order_by": "release_date",
+        "sort_order": "asc",
+        "limit": "1000",
+        "offset": str(offset),
+    }
+    safe = f"{RELEASE_DATES_URL}?{urlencode({**params, 'api_key': '***'})}"
+    return f"{RELEASE_DATES_URL}?{urlencode({**params, 'api_key': api_key})}", safe
+
+
+def parse_release_dates(payload: bytes) -> tuple[int, list[dict[str, object]]]:
+    try:
+        data = json.loads(payload)
+        count = int(data["count"])
+        items = [
+            {
+                "calendar": "fred",
+                "event": f"release:{int(r['release_id'])}",
+                "valid_date": date.fromisoformat(r["date"]),
+                "title": str(r["release_name"]),
+                "time": "",
+                "country": "US",
+                "category": "release",
+            }
+            for r in data["release_dates"]
+        ]
+    except (ValueError, KeyError, TypeError) as exc:
+        raise FredError(f"unexpected release dates payload: {exc}") from exc
+    return count, items
+
+
+def fetch_release_dates(
+    client: HttpClient,
+    raw: RawStore,
+    clean: CleanStore,
+    *,
+    start: date,
+    api_key: str,
+    now: Callable[[], datetime],
+    max_pages: int = 20,
+) -> FetchReport:
+    """Release dates from ``start`` on into ``calendar_events`` (known_time = fetch time)."""
+    report = FetchReport(SOURCE)
+    offset, count, pages = 0, None, 0
+    while (count is None or offset < count) and pages < max_pages:
+        url, safe = release_dates_url(api_key, start, offset)
+        try:
+            res = client.get(url, safe_url=safe)
+        except FetchError as exc:
+            report.errors.append(f"release dates: {exc}")
+            break
+        fetched_at = ensure_utc(now())
+        rec = raw.write(
+            SOURCE,
+            "release_dates",
+            f"release-dates-{offset}-{fetched_at:%Y%m%dt%H%M%S%fz}-{uuid4().hex[:6]}.json",
+            res.content,
+            fetched_at=fetched_at,
+            meta={"url": res.safe_url, "status": res.status},
+        )
+        report.fetched += 1
+        pages += 1
+        if res.status != 200:
+            report.errors.append(f"release dates: HTTP {res.status} (raw {rec.ref})")
+            break
+        try:
+            count, items = parse_release_dates(res.content)
+        except FredError as exc:
+            report.errors.append(f"{exc} (raw {rec.ref})")
+            break
+        rows = [
+            {
+                **i,
+                "source": SOURCE,
+                "known_time": fetched_at,
+                "known_time_basis": "fetched",
+                "fetched_at": fetched_at,
+                "raw_ref": rec.ref,
+            }
+            for i in items
+        ]
+        report.rows_written += clean.append(CALENDAR, rows)
+        if not items:
+            break
+        offset += len(items)
+    log.info("fred.release_dates", rows=report.rows_written, errors=len(report.errors))
     return report
