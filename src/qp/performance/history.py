@@ -157,6 +157,7 @@ class FlowItem:
     transaction: Transaction
     bucket: Bucket
     value_try: Decimal | None
+    value_local: Decimal | None = None  # in the instrument's or cash's own currency
 
 
 def external_flows(
@@ -175,14 +176,23 @@ def external_flows(
             if leg.kind is LegKind.POSITION:
                 assert leg.instrument is not None
                 assert leg.quantity is not None
-                _, value, _ = pricer.value(leg.instrument, leg.currency, leg.quantity, day, into)
+                local, value, _ = pricer.value(
+                    leg.instrument, leg.currency, leg.quantity, day, into
+                )
                 bucket = instrument_bucket(leg.instrument)
             elif leg.kind is LegKind.CASH:
-                _, value, _ = pricer.value(None, leg.currency, leg.amount, day, into)
+                local, value, _ = pricer.value(None, leg.currency, leg.amount, day, into)
                 bucket = cash_bucket(leg.currency)
             else:
                 continue
-            items.append(FlowItem(tx, bucket, None if value is None else sign * abs(value)))
+            items.append(
+                FlowItem(
+                    tx,
+                    bucket,
+                    None if value is None else sign * abs(value),
+                    None if local is None else sign * abs(local),
+                )
+            )
 
     for tx in day_txs:
         if tx.tx_type in EXTERNAL_FLOW_TYPES:
