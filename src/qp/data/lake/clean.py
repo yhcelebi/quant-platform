@@ -263,6 +263,12 @@ class CleanStore:
         rows = self.query(ds, as_of=as_of, where=series, valid_to=on, observed_only=observed_only)
         return max(rows, key=lambda r: r[ds.valid], default=None)
 
+    def max_known_time(self, ds: Dataset) -> datetime | None:
+        """The latest ``known_time`` stored: what a result computed now could have seen."""
+        rows = self._select(ds, "SELECT max(known_time) AS k FROM src", [])
+        value = rows[0]["k"] if rows else None
+        return value if isinstance(value, datetime) else None
+
     def stats(self, ds: Dataset) -> Row | None:
         """Row count, valid-date range and last fetch, for status displays."""
         rows = self._select(

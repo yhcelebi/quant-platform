@@ -1,0 +1,8 @@
+# Copy this folder to research/studies/<your_id>/ and edit. ADR 0013.
+title: "One-line title"
+hypothesis: >
+  What you expect to find, and what result would prove you wrong. Write it before running.
+as_of: "2026-10-24T18:00:00+03:00"   # the study sees only facts known at this moment
+seed: 0                              # every random draw comes from ctx.rng
+params: {}
+tags: []

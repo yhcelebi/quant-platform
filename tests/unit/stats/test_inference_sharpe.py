@@ -83,6 +83,8 @@ def test_garch_recovers_simulated_parameters() -> None:
     assert g.beta == pytest.approx(beta, abs=0.05)
     assert g.persistence < 1
     assert g.omega == pytest.approx(omega, rel=0.6)
+    assert g.converged
+    assert g.reliable
 
 
 def test_bootstrap_is_seeded_and_covers_the_mean() -> None:

@@ -143,26 +143,41 @@ class Garch:
     beta: float
     next_volatility: float  # one period ahead, in the units of the input returns
     loglik: float
+    converged: bool
+    scale: float  # factor arch applied to the returns before fitting
 
     @property
     def persistence(self) -> float:
         return self.alpha + self.beta
 
+    @property
+    def reliable(self) -> bool:
+        """Converged and not at a boundary (alpha or beta ~0, or persistence ~1): a fit at a
+        boundary describes the optimizer, not the data."""
+        return (
+            self.converged and self.alpha > 1e-4 and self.beta > 1e-4 and self.persistence < 0.999
+        )
+
 
 def garch11(returns: Sequence[float]) -> Garch:
-    """GARCH(1,1), normal errors, constant mean; fitted on returns x 100 (arch's preferred
-    scale) and reported back in the input units."""
-    r = _array(returns, "GARCH", 50) * 100
-    res = arch_model(r, vol="GARCH", p=1, q=1, dist="normal", mean="Constant").fit(disp="off")
+    """GARCH(1,1), normal errors, constant mean. arch rescales the returns to a well-conditioned
+    range (``scale``); parameters are reported back in the input units."""
+    r = _array(returns, "GARCH", 50)
+    res = arch_model(r, vol="GARCH", p=1, q=1, dist="normal", mean="Constant", rescale=True).fit(
+        disp="off"
+    )
+    k = float(res.scale)
     p = res.params
     var = float(res.forecast(horizon=1, reindex=False).variance.to_numpy()[-1, 0])
     return Garch(
-        float(p["mu"]) / 100,
-        float(p["omega"]) / 100**2,
+        float(p["mu"]) / k,
+        float(p["omega"]) / k**2,
         float(p["alpha[1]"]),
         float(p["beta[1]"]),
-        math.sqrt(var) / 100,
+        math.sqrt(var) / k,
         float(res.loglikelihood),
+        int(res.convergence_flag) == 0,
+        k,
     )
 
 

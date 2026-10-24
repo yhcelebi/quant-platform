@@ -11,6 +11,7 @@ from typing import Any
 from sqlalchemy import func, select
 
 from qp.core import Clock, QPError, SystemClock, istanbul_date
+from qp.data import calendar
 from qp.data.connectors import evds, fred, tcmb
 from qp.data.connectors.http import HttpClient
 from qp.data.connectors.tcmb import FetchReport
@@ -23,7 +24,7 @@ from qp.platform.jobs import JobRun, job_run
 from qp.platform.lake import LakePaths
 from qp.platform.settings import Settings
 
-DATASETS: tuple[Dataset, ...] = (tcmb.DATASET, evds.DATASET, fred.DATASET)
+DATASETS: tuple[Dataset, ...] = (tcmb.DATASET, evds.DATASET, fred.DATASET, calendar.DATASET)
 DEFAULT_LOOKBACK = timedelta(days=30)
 
 
@@ -264,4 +265,14 @@ def fx_history(
     for r in rows:
         if r["currency"] in out:
             out[r["currency"]].append((r["valid_date"], plain(r["value"] / Decimal(r["unit"]))))
+    return out
+
+
+def lake_snapshot(settings: Settings) -> dict[str, str | None]:
+    """Each clean dataset's latest ``known_time`` (ISO) or None: the data a result saw."""
+    _, clean = lake(settings)
+    out: dict[str, str | None] = {}
+    for ds in DATASETS:
+        k = clean.max_known_time(ds)
+        out[ds.name] = k.isoformat() if k is not None else None
     return out

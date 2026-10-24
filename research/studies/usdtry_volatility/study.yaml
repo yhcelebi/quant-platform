@@ -1,0 +1,12 @@
+title: "USD/TRY daily volatility: GARCH(1,1) and stationarity"
+hypothesis: >
+  Daily log changes of the TCMB USD/TRY buying rate are stationary with volatility
+  clustering (GARCH persistence alpha + beta above 0.8). Wrong if returns fail stationarity
+  or persistence is below 0.5.
+as_of: "2026-10-24T18:00:00+03:00"
+seed: 7
+params:
+  currency: USD
+  rate_kind: forex_buying
+  bootstrap_reps: 2000
+tags: [fx, volatility]

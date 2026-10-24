@@ -11,8 +11,11 @@
 1. **OLS** with Newey-West (HAC) standard errors, lag `floor(4 (n/100)^(2/9))` *(default)*.
 2. **Stationarity**: ADF (constant, AIC lag choice) and KPSS (level); reported together
    because their nulls are opposite. **Cointegration**: Engle-Granger.
-3. **GARCH(1,1)** with normal errors *(default)* on returns in percent (arch's scaling);
-   reports omega, alpha, beta, persistence and the next-period volatility.
+3. **GARCH(1,1)** with normal errors *(default)*; arch rescales the returns to a
+   well-conditioned range and parameters are reported in the input units. A fit is
+   `reliable` only if it converged and is not at a boundary (alpha or beta ≈ 0, or
+   persistence ≥ 0.999); studies must check it (the first USD/TRY run showed why: a
+   managed currency's tiny daily moves gave alpha ≈ 1, beta ≈ 0).
 4. **Bootstrap**: stationary bootstrap (Politis-Romano) with mean block length
    `n^(1/3)` *(default)*, seeded; percentile confidence intervals.
 5. **Sharpe ratio** per period, annualized by √(periods per year). **Probabilistic Sharpe
