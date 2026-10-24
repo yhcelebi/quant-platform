@@ -74,7 +74,8 @@ def parametric_es(returns: Sequence[float], level: float) -> float:
 
 @dataclass(frozen=True, slots=True)
 class Drawdown:
-    """Indices into the wealth series: peak, trough and recovery (None: not recovered)."""
+    """Indices into the wealth series: peak (the last day at the high-water mark before the
+    decline), trough, and recovery (the first day back at the peak; None: not recovered)."""
 
     depth: float  # <= 0, e.g. -0.25
     peak: int
