@@ -22,6 +22,7 @@ from apps.cli import (
     ref_cmd,
     research_cmd,
     risk_cmd,
+    value_cmd,
 )
 from qp.core.errors import ConfigError
 from qp.platform import init_platform
@@ -39,6 +40,7 @@ app.add_typer(macro_cmd.app, name="macro")
 app.add_typer(news_cmd.app, name="news")
 app.add_typer(research_cmd.app, name="research")
 app.add_typer(journal_cmd.app, name="journal")
+app.add_typer(value_cmd.app, name="value")
 console = Console()
 
 _STYLE = {Status.OK: "green", Status.WARN: "yellow", Status.FAIL: "red"}
