@@ -39,3 +39,10 @@ def qty(value: Decimal | None) -> str:
         return "—"
     text = f"{value.normalize():f}"
     return text
+
+
+def pct(value: Decimal | float | None, places: int = 2) -> str:
+    """A fraction shown as a percentage (display only)."""
+    if value is None or value != value:  # None or nan
+        return "—"
+    return f"{float(value) * 100:,.{places}f}%"

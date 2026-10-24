@@ -77,6 +77,7 @@ def test_case_e_through_the_ledger() -> None:
     assert s.pnl == Decimal(-110)
     assert s.twr == Decimal("-0.01")
     assert s.xirr == pytest.approx(-0.0728083, abs=5e-7)
+    assert s.mwr_period == pytest.approx(s.xirr)  # exactly 365 days
     assert [r for _, r in s.returns if r != 0] == [Decimal("0.1"), Decimal("-0.1")]
     assert s.twr_annualized is not None  # 365 days: annualized equals the total
     assert s.twr_annualized == pytest.approx(Decimal("-0.01"), abs=Decimal("1e-25"))

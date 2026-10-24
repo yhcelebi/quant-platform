@@ -1,0 +1,3 @@
+valid_date,series,value,source,known_time
+2024-12-01,TUFE_EXAMPLE,100.00,synthetic example,2025-01-03T10:00:00+03:00
+2025-01-01,TUFE_EXAMPLE,105.00,synthetic example,2025-02-03T10:00:00+03:00

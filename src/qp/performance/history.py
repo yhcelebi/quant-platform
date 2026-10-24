@@ -227,11 +227,19 @@ class History:
     days: list[DayRecord] = field(default_factory=list)
 
     def window(self, start: date | None = None, end: date | None = None) -> list[DayRecord]:
-        return [
-            d
-            for d in self.days
-            if (start is None or d.day >= start) and (end is None or d.day <= end)
-        ]
+        """Records from the last valuation day on or before ``start`` (the window's starting
+        value: a YTD window starting on a weekend 31 Dec starts at the 30th's close) to the
+        last one on or before ``end``."""
+        days = [d for d in self.days if end is None or d.day <= end]
+        if start is None:
+            return days
+        first = 0
+        for i, d in enumerate(days):
+            if d.day <= start:
+                first = i
+            else:
+                break
+        return days[first:]
 
     @property
     def first_day(self) -> date | None:

@@ -219,6 +219,14 @@ class Summary:
     def days(self) -> int:
         return (self.end - self.start).days
 
+    @property
+    def mwr_period(self) -> float | None:
+        """Money-weighted return over the window (XIRR de-annualized), for windows under a
+        year, which DOMAIN says not to annualize."""
+        if self.xirr is None:
+            return None
+        return float((1 + self.xirr) ** (self.days / 365) - 1)
+
 
 def summarize(points: Sequence[Point], view: View) -> Summary | Unavailable:
     """Performance over the whole of ``points`` (the first point is the starting value; its

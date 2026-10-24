@@ -33,3 +33,28 @@ sources:                # phase 2 connectors; API keys only via env/.env (QP_SOU
 log:
   level: INFO
   json_format: true
+
+performance:            # ADR 0010
+  # Monthly price index for the real TRY view: an EVDS code once confirmed with a key
+  # (e.g. evds:TP.TUKFIY2025.GENEL), or any id you enter in data/manual/series.csv.
+  # Empty: real figures are shown as unavailable.
+  inflation_series: ""
+  stale_after_days: 7
+  benchmarks:           # unavailable until their data exists (manual prices.csv, lake, series.csv)
+    - {name: USD/TRY, kind: fx, currency: USD}
+    - {name: EUR/TRY, kind: fx, currency: EUR}
+    - {name: BIST 100, kind: price, instrument: XU100.BIST}
+    - {name: S&P 500 TR, kind: price, instrument: SPXTR.INDEX}
+    - {name: Gold, kind: price, instrument: XAUUSD.SPOT}
+    - {name: TRY deposit, kind: rate, series: TRY_DEPOSIT, scale: "0.01"}
+
+risk:
+  lookback_days: 250    # valuation days used for VaR/ES
+  min_observations: 60  # fewer fresh daily returns: figure unavailable
+
+alerts:                 # evaluated after the evening TCMB fetch; Telegram if configured
+  enabled: true
+  daily_loss: "0.03"    # alert when the day's TWR return is below -3%
+  drawdown: "0.10"      # alert when the drawdown from the peak exceeds 10%
+  var_level: 0.99       # alert when the day's loss exceeds the previous day's 99% VaR
+  stale_price_days: 7

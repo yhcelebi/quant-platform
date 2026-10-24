@@ -16,9 +16,10 @@ import json
 import os
 from collections.abc import Mapping
 from datetime import date
+from decimal import Decimal
 from enum import StrEnum
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 import yaml
 from dotenv import dotenv_values
@@ -104,6 +105,42 @@ class SourcesSettings(_Section):
     user_agent: str = "qp-personal/0.1 (personal research platform)"
 
 
+class BenchmarkSettings(_Section):
+    """A benchmark (ADR 0010, 11): ``fx`` (currency), ``price`` (instrument) or ``rate``
+    (series, simple annual; ``scale`` 0.01 for a series in percent)."""
+
+    name: str
+    kind: Literal["fx", "price", "rate"]
+    currency: str | None = None
+    instrument: str | None = None
+    series: str | None = None
+    scale: Decimal = Decimal(1)
+
+
+class PerformanceSettings(_Section):
+    """Performance views (ADR 0010). ``inflation_series``: a monthly index series id
+    (``evds:CODE``, or an id in data/manual/series.csv); empty = real view unavailable."""
+
+    inflation_series: str = ""
+    stale_after_days: int = Field(default=7, ge=1)
+    benchmarks: tuple[BenchmarkSettings, ...] = ()
+
+
+class RiskSettings(_Section):
+    lookback_days: int = Field(default=250, ge=20)
+    min_observations: int = Field(default=60, ge=10)
+
+
+class AlertSettings(_Section):
+    """Alert thresholds (fractions). Evaluated after the evening TCMB fetch."""
+
+    enabled: bool = True
+    daily_loss: Decimal = Decimal("0.03")
+    drawdown: Decimal = Decimal("0.10")
+    var_level: float = Field(default=0.99, ge=0.5, lt=1)
+    stale_price_days: int = Field(default=7, ge=1)
+
+
 class TelegramSettings(_Section):
     bot_token: SecretStr | None = None
     chat_id: str | None = None
@@ -135,6 +172,9 @@ class Settings(BaseSettings):
     lake: LakeSettings = LakeSettings()
     manual: ManualDataSettings = ManualDataSettings()
     sources: SourcesSettings = SourcesSettings()
+    performance: PerformanceSettings = PerformanceSettings()
+    risk: RiskSettings = RiskSettings()
+    alerts: AlertSettings = AlertSettings()
     telegram: TelegramSettings = TelegramSettings()
     log: LogSettings = LogSettings()
 

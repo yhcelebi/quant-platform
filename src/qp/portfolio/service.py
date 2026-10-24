@@ -8,7 +8,7 @@ from datetime import date, datetime
 from qp.data.lake import CleanStore
 from qp.data.lake_market import LakeMarketData
 from qp.data.manual import ManualMarketData
-from qp.data.market import LayeredMarketData, MarketData
+from qp.data.market import LayeredMarketData
 from qp.ledger.domain import Account
 from qp.ledger.engine import replay
 from qp.ledger.repo import LedgerRepository
@@ -19,7 +19,7 @@ from qp.portfolio.holdings import CostMethod, HoldingsReport, build_report
 from qp.portfolio.reconcile import Mismatch, reconcile
 
 
-def market_data(settings: Settings) -> MarketData:
+def market_data(settings: Settings) -> LayeredMarketData:
     """Owner-maintained manual values first, then the lake (newest date wins; ties: manual)."""
     lake = LakeMarketData(
         CleanStore(LakePaths(settings.lake.root)), rate_kind=settings.sources.tcmb.rate_kind
