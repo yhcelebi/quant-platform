@@ -94,7 +94,10 @@ def test_news_flow(migrated_db: Database, monkeypatch: pytest.MonkeyPatch, tmp_p
     items = query(migrated_db, as_of=datetime(2030, 1, 1, tzinfo=UTC))
     titles = {i.title: i for i in items}
     thy = titles["THYAO temettü dağıtımı hakkında"]
-    assert {(e.kind, e.key) for e in thy.entities} == {("instrument", "THYAO.BIST")}
+    assert {(e.kind, e.key) for e in thy.entities} == {
+        ("instrument", "THYAO.BIST"),
+        ("institution", "TCMB"),  # from the feed's institution
+    }
     assert "dividend" in thy.tags
     ecb = titles["Monetary policy decisions"]
     assert ecb.url == "https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.mp261029~test.en.html"

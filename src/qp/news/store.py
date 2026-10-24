@@ -64,6 +64,7 @@ def store_items(
     raw_ref: str,
     patterns: Sequence[Pattern],
     rules: Sequence[TagRule],
+    institution: str = "",
 ) -> StoreResult:
     """Insert new items; skip known URLs and same-source titles within 48 hours."""
     fetched_at = ensure_utc(fetched_at)
@@ -99,7 +100,10 @@ def store_items(
             s.add(row)
             s.flush()
             text = f"{item.title} {item.summary}"
-            for e in link(text, patterns):
+            entities = link(text, patterns)
+            if institution and not any(e.key == institution for e in entities):
+                entities.append(Entity("institution", institution, f"source:{source}"))
+            for e in entities:
                 s.add(ItemEntityRow(item_id=row.id, kind=e.kind, key=e.key, matched=e.matched))
             for t in tag(text, rules):
                 s.add(ItemTagRow(item_id=row.id, tag=t))

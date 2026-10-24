@@ -11,7 +11,7 @@ from pathlib import Path
 import yaml
 
 from qp.core import QPError
-from qp.news.text import fold
+from qp.news.text import fold, variants
 
 
 class RulesError(QPError):
@@ -48,5 +48,5 @@ def load_rules(path: Path) -> list[TagRule]:
 
 
 def tag(text: str, rules: Sequence[TagRule]) -> list[str]:
-    folded = fold(text)
-    return [r.tag for r in rules if r.regex.search(folded)]
+    forms = variants(text)
+    return [r.tag for r in rules if any(r.regex.search(f) for f in forms)]

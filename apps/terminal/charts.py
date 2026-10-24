@@ -163,3 +163,23 @@ def histogram(title: str, values: Sequence[float], marker: float | None, label: 
         )
     fig.update_layout(showlegend=False, hovermode="closest", bargap=0.08)
     return _layout(fig, title=title, height=280)
+
+
+def curve(
+    title: str, years: Sequence[float], values: Sequence[float], labels: Sequence[str]
+) -> go.Figure:
+    """A yield curve: maturity in years on x (one series)."""
+    fig = go.Figure(
+        go.Scatter(
+            x=list(years),
+            y=list(values),
+            mode="lines+markers",
+            text=list(labels),
+            line={"width": 2, "color": series_colors()[0]},
+            marker={"size": 8},
+            hovertemplate="%{text}: %{y:.2f}%<extra></extra>",
+        )
+    )
+    fig.update_xaxes(title="years to maturity")
+    fig.update_layout(showlegend=False, hovermode="closest")
+    return _layout(fig, title=title, y_format=".2f")

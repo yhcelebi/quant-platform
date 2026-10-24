@@ -107,6 +107,7 @@ class FeedSettings(_Section):
     language: str = ""
     naive_tz: str = "UTC"
     public_institution: bool = False  # only then is a short feed summary stored
+    institution: str = ""  # e.g. TCMB: every item of this feed links to it
     enabled: bool = True
 
 

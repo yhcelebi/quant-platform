@@ -93,6 +93,7 @@ def fetch_feeds(
             raw_ref=rec.ref,
             patterns=patterns,
             rules=rules,
+            institution=feed.institution,
         )
         report.new += len(stored.new_ids)
         report.new_ids += stored.new_ids

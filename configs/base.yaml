@@ -41,22 +41,26 @@ sources:                # phase 2 connectors; API keys only via env/.env (QP_SOU
         language: tr
         naive_tz: Europe/Istanbul
         public_institution: true
+        institution: TCMB
       - code: tcmb_press_en
         name: CBRT press releases
         url: https://www.tcmb.gov.tr/wps/wcm/connect/EN/TCMB+EN/Bottom+Menu/Other/RSS/Press+Releases
         language: en
         naive_tz: Europe/Istanbul
         public_institution: true
+        institution: TCMB
       - code: fed_monetary
         name: Federal Reserve monetary policy press releases
         url: https://www.federalreserve.gov/feeds/press_monetary.xml
         language: en
         public_institution: true
+        institution: FED
       - code: ecb_press
         name: ECB press releases, speeches and interviews
         url: https://www.ecb.europa.eu/rss/press.html
         language: en
         public_institution: true
+        institution: ECB
 
 log:
   level: INFO

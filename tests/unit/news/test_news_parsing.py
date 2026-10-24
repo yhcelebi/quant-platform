@@ -92,6 +92,9 @@ def test_entities_and_tags() -> None:
     assert set(tag("Faiz Oranlarına İlişkin Basın Duyurusu", rules)) == {"interest_rates"}
     assert "inflation" in tag("Enflasyon Raporu 2026-IV", rules)
     assert tag("Monetary policy decisions", rules) == ["interest_rates"]
+    assert tag("Press Release on Interest Rates (2026-45)", rules) == ["interest_rates"]
+    assert tag("Frank Elderson: Interview with Die Presse", rules) == ["speech"]
+    assert {e.key for e in link("INFLATION in Istanbul", patterns)} == set()
 
 
 def test_rules_file_validation(tmp_path: Path) -> None:

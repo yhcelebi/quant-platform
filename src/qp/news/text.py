@@ -18,6 +18,12 @@ def fold(text: str) -> str:
     return unicodedata.normalize("NFC", text.lower())
 
 
+def variants(text: str) -> tuple[str, str]:
+    """Turkish-folded and plain lower-case forms: English 'Interest' must stay 'interest',
+    Turkish 'İLİŞKİN' must become 'ilişkin'. Matching tries both."""
+    return fold(text), unicodedata.normalize("NFC", text.lower())
+
+
 def clean(text: str) -> str:
     """Unescape HTML entities, drop tags, collapse whitespace."""
     text = html.unescape(re.sub(r"<[^>]+>", " ", text))

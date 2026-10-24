@@ -12,7 +12,7 @@ import re
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 
-from qp.news.text import fold
+from qp.news.text import fold, variants
 
 
 @dataclass(frozen=True, slots=True)
@@ -70,12 +70,14 @@ def build_patterns(
 
 def link(text: str, patterns: Sequence[Pattern]) -> list[Entity]:
     """Entities found in ``text``; one per (kind, key), with the first matched text."""
-    folded = fold(text)
+    forms = variants(text)
     found: dict[tuple[str, str], Entity] = {}
     for p in patterns:
         if (p.kind, p.key) in found:
             continue
-        m = p.regex.search(folded if p.folded else text)
-        if m:
-            found[(p.kind, p.key)] = Entity(p.kind, p.key, m.group(0))
+        for candidate in forms if p.folded else (text,):
+            m = p.regex.search(candidate)
+            if m:
+                found[(p.kind, p.key)] = Entity(p.kind, p.key, m.group(0))
+                break
     return list(found.values())
