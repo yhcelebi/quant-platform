@@ -8,7 +8,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 
-from sqlalchemy import select
+from sqlalchemy import delete, select
 
 from qp.core import ensure_utc
 from qp.news.entities import Entity, Pattern, link
@@ -109,6 +109,32 @@ def store_items(
                 s.add(ItemTagRow(item_id=row.id, tag=t))
             result.new_ids.append(row.id)
     return result
+
+
+def relink(
+    db: Database,
+    *,
+    patterns: Sequence[Pattern],
+    rules: Sequence[TagRule],
+    institutions: dict[str, str],
+) -> int:
+    """Recompute every item's entity links and tags (derived data; the items themselves are
+    never changed). Run after editing news_rules.yaml or the instrument master."""
+    with db.session() as s:
+        s.execute(delete(ItemEntityRow))
+        s.execute(delete(ItemTagRow))
+        rows = s.scalars(select(ItemRow)).all()
+        for row in rows:
+            text = f"{row.title} {row.summary}"
+            entities = link(text, patterns)
+            inst = institutions.get(row.source_code, "")
+            if inst and not any(e.key == inst for e in entities):
+                entities.append(Entity("institution", inst, f"source:{row.source_code}"))
+            for e in entities:
+                s.add(ItemEntityRow(item_id=row.id, kind=e.kind, key=e.key, matched=e.matched))
+            for t in tag(text, rules):
+                s.add(ItemTagRow(item_id=row.id, tag=t))
+        return len(rows)
 
 
 @dataclass(frozen=True, slots=True)

@@ -11,7 +11,7 @@ from qp.data.connectors.http import FetchError, HttpClient
 from qp.data.lake import RawStore
 from qp.news.entities import Pattern, build_patterns
 from qp.news.parse import FeedError, parse_feed
-from qp.news.store import SourceInfo, ensure_sources, store_items
+from qp.news.store import SourceInfo, ensure_sources, relink, store_items
 from qp.news.tags import load_rules
 from qp.platform.db import Database
 from qp.platform.jobs import job_run
@@ -125,3 +125,13 @@ def fetch_news(settings: Settings, db: Database, *, clock: Clock | None = None) 
 def rules_path() -> Path:
     """configs/news_rules.yaml in the configuration directory (QP_CONFIG_DIR or ./configs)."""
     return default_config_dir() / RULES_FILE
+
+
+def relink_all(settings: Settings, db: Database) -> int:
+    """Recompute entity links and tags of every stored item with today's rules."""
+    return relink(
+        db,
+        patterns=instrument_patterns(db),
+        rules=load_rules(rules_path()),
+        institutions={f.code: f.institution for f in settings.sources.news.feeds},
+    )

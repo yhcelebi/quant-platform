@@ -13,7 +13,7 @@ from apps.cli.common import console, fail, settings
 from qp.alerts.service import run_news_alerts
 from qp.core import SystemClock, assume_istanbul, istanbul_date, parse_utc, to_istanbul
 from qp.core.errors import QPError
-from qp.news.service import fetch_news
+from qp.news.service import fetch_news, relink_all
 from qp.news.store import query
 from qp.platform import Database
 
@@ -85,3 +85,16 @@ def list_items(
     console.print(t)
     if not items:
         console.print("no items (run `uv run qp news fetch`)")
+
+
+@app.command("relink")
+def relink_cmd() -> None:
+    """Recompute entity links and tags of stored items (after editing news_rules.yaml or
+    importing instruments). Items themselves are never changed."""
+    cfg = settings()
+    try:
+        with Database.from_settings(cfg.db) as db:
+            n = relink_all(cfg, db)
+    except QPError as exc:
+        fail(str(exc))
+    console.print(f"relinked {n} items")

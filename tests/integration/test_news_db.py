@@ -114,3 +114,24 @@ def test_news_flow(migrated_db: Database, monkeypatch: pytest.MonkeyPatch, tmp_p
     assert sink.sent[0].startswith("THYAO.BIST in the news (tcmb_press_en, matched 'THYAO')")
     again = run_news_alerts(settings, migrated_db, day=date(2025, 1, 14), notifier=sink)
     assert again.new_ids == []
+
+
+def test_relink_recomputes_derived_links(
+    migrated_db: Database, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    from qp.news.service import relink_all
+
+    test_news_flow(migrated_db, monkeypatch, tmp_path)
+    settings = load_settings(config_dir=REPO / "configs", env_file=None)
+    before = {
+        i.id: (i.entities, i.tags)
+        for i in query(migrated_db, as_of=datetime(2030, 1, 1, tzinfo=UTC))
+    }
+    assert relink_all(settings, migrated_db) == len(before)
+    after = {
+        i.id: (i.entities, i.tags)
+        for i in query(migrated_db, as_of=datetime(2030, 1, 1, tzinfo=UTC))
+    }
+    assert {k: (set(v[0]), v[1]) for k, v in after.items()} == {
+        k: (set(v[0]), v[1]) for k, v in before.items()
+    }
