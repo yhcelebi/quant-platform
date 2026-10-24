@@ -9,6 +9,7 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy.engine import Connection
 
+import qp.alerts.models
 import qp.data.quality.models
 import qp.ledger.models
 import qp.platform.jobs

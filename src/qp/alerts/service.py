@@ -1,0 +1,81 @@
+"""Run the alert rules for a day: evaluate, store new events once, deliver them."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from datetime import date
+
+from qp.alerts.rules import AlertCandidate, Thresholds, data_alerts, performance_alerts
+from qp.alerts.store import deliver, record
+from qp.data.market import PreloadedMarketData
+from qp.performance.history import LATEST
+from qp.performance.metrics import Summary, View
+from qp.performance.service import load_context, performance_report
+from qp.platform.db import Database
+from qp.platform.jobs import job_run
+from qp.platform.notifier import Notifier, build_notifier
+from qp.platform.settings import Settings
+from qp.portfolio.holdings import build_report
+
+
+@dataclass
+class AlertRun:
+    day: date
+    candidates: list[AlertCandidate] = field(default_factory=list)
+    new_ids: list[int] = field(default_factory=list)
+    errors: list[str] = field(default_factory=list)
+    notes: list[str] = field(default_factory=list)
+
+
+def thresholds(settings: Settings) -> Thresholds:
+    a, r = settings.alerts, settings.risk
+    return Thresholds(
+        a.daily_loss,
+        a.drawdown,
+        a.var_level,
+        a.stale_price_days,
+        r.lookback_days,
+        r.min_observations,
+    )
+
+
+def evaluate(settings: Settings, day: date) -> AlertRun:
+    """Candidates for ``day`` (whole ledger, TRY view); nothing is stored or sent."""
+    run = AlertRun(day)
+    ctx = load_context(settings)
+    if not ctx.transactions:
+        run.notes.append("ledger is empty")
+        return run
+    t = thresholds(settings)
+    report = performance_report(ctx, end=day, view=View.TRY, with_periods=False)
+    if isinstance(report.summary, Summary):
+        run.candidates += performance_alerts(report.summary, t)
+    else:
+        run.notes.append(f"performance unavailable: {report.summary.reason}")
+    market = PreloadedMarketData(ctx.market, as_of=LATEST, until=day)
+    holdings = build_report(ctx.transactions, market, as_of=day)
+    run.candidates += data_alerts(holdings, t)
+    return run
+
+
+def run_alerts(
+    settings: Settings,
+    db: Database,
+    *,
+    day: date,
+    notifier: Notifier | None = None,
+    dry_run: bool = False,
+) -> AlertRun:
+    """Evaluate; unless ``dry_run``, store new events and send them (recorded as a job)."""
+    if dry_run:
+        return evaluate(settings, day)
+    with job_run(db, "alerts", secrets=settings.secret_values()) as job:
+        run = evaluate(settings, day)
+        run.new_ids = record(db, run.candidates)
+        run.errors = deliver(db, notifier or build_notifier(settings.telegram), run.new_ids)
+        job.note(f"{day}: {len(run.candidates)} candidates, {len(run.new_ids)} new")
+        job.lines.extend(run.notes)
+        if run.errors:
+            job.status = "partial"
+            job.lines.extend(run.errors)
+    return run

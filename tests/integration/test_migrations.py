@@ -8,6 +8,7 @@ from alembic.autogenerate import compare_metadata
 from alembic.runtime.migration import MigrationContext
 from sqlalchemy import text
 
+import qp.alerts.models
 import qp.ledger.models
 import qp.reference.models
 from qp.platform import SCHEMAS, Base, Database, create_db_engine

@@ -66,7 +66,12 @@ def test_workers_once(in_tmp_cwd: Path, capsys: pytest.CaptureFixture[str]) -> N
 
 def test_workers_schedule(config_dir: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     scheduler = build_scheduler(load_settings(config_dir=config_dir, env_file=None))
-    assert [j.id for j in scheduler.get_jobs()] == ["heartbeat", "tcmb_fx", "tcmb_fx_retry"]
+    assert [j.id for j in scheduler.get_jobs()] == [
+        "heartbeat",
+        "tcmb_fx",
+        "tcmb_fx_retry",
+        "alerts",
+    ]
     tcmb = scheduler.get_job("tcmb_fx")
     assert tcmb is not None
     assert str(tcmb.trigger.timezone) == "Europe/Istanbul"
@@ -74,6 +79,9 @@ def test_workers_schedule(config_dir: Path, monkeypatch: pytest.MonkeyPatch) -> 
     keyed = build_scheduler(load_settings(config_dir=config_dir, env_file=None))
     assert "fred" in [j.id for j in keyed.get_jobs()]
     assert "evds" not in [j.id for j in keyed.get_jobs()]  # no key and no series
+    monkeypatch.setenv("QP_ALERTS__ENABLED", "false")
+    quiet = build_scheduler(load_settings(config_dir=config_dir, env_file=None))
+    assert "alerts" not in [j.id for j in quiet.get_jobs()]
 
 
 def test_trader_paper_runs(in_tmp_cwd: Path) -> None:
