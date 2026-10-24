@@ -114,3 +114,15 @@ Recommended defaults are in effect (ADR 0010); change any by answering.
 20. **Alert thresholds**: daily loss 3%, drawdown 10%, VaR 99%, stale price 7 days. Telegram
     needs `QP_TELEGRAM__BOT_TOKEN` and `QP_TELEGRAM__CHAT_ID` in `.env`; until then alerts go
     to the log and `qp alerts list`.
+
+## Phase 4 — macro and news (built 2026-10-25, recommended defaults)
+
+21. **News sources**: official only (TCMB TR/EN, Fed monetary policy, ECB). Add commercial
+    feeds only if their terms allow personal automated use; tell me which.
+22. **KAP**: not built (no public API or terms; plain requests are refused). Options: skip,
+    manual entry, a licensed vendor, or ask KAP (kapdestek@mkk.com.tr) about access.
+23. **TÜİK and MPC dates**: please fill `data/manual/calendar.csv` from TÜİK's 2026 calendar
+    and TCMB's MPC schedule (no machine-readable source found), or ask me to draft rows for
+    you to check against the official pages.
+24. **EVDS codes** in `configs/indicators.yaml` (TÜFE, USD/TRY) are marked "to confirm" and
+    need your key.
