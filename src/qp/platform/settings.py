@@ -98,10 +98,29 @@ class FredSettings(_Section):
     series: tuple[str, ...] = ("CPIAUCSL", "DGS10", "DFF")
 
 
+class FeedSettings(_Section):
+    """One RSS/Atom feed (ADR 0012, 6). ``naive_tz``: zone for dates without an offset."""
+
+    code: str = Field(pattern=r"^[a-z0-9_]+$")
+    name: str
+    url: str
+    language: str = ""
+    naive_tz: str = "UTC"
+    public_institution: bool = False  # only then is a short feed summary stored
+    enabled: bool = True
+
+
+class NewsSettings(_Section):
+    min_interval_s: float = Field(default=2.0, ge=1.0)
+    poll_minutes: int = Field(default=30, ge=15)
+    feeds: tuple[FeedSettings, ...] = ()
+
+
 class SourcesSettings(_Section):
     tcmb: TcmbSettings = TcmbSettings()
     evds: EvdsSettings = EvdsSettings()
     fred: FredSettings = FredSettings()
+    news: NewsSettings = NewsSettings()
     user_agent: str = "qp-personal/0.1 (personal research platform)"
 
 

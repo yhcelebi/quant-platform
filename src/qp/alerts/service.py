@@ -3,11 +3,19 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import date
+from datetime import date, datetime, time, timedelta
 
-from qp.alerts.rules import AlertCandidate, Thresholds, data_alerts, performance_alerts
+from qp.alerts.rules import (
+    AlertCandidate,
+    Thresholds,
+    data_alerts,
+    news_alerts,
+    performance_alerts,
+)
 from qp.alerts.store import deliver, record
+from qp.core import assume_istanbul
 from qp.data.market import PreloadedMarketData
+from qp.news.store import query as news_query
 from qp.performance.history import LATEST
 from qp.performance.metrics import Summary, View
 from qp.performance.service import load_context, performance_report
@@ -78,4 +86,31 @@ def run_alerts(
         if run.errors:
             job.status = "partial"
             job.lines.extend(run.errors)
+    return run
+
+
+def run_news_alerts(
+    settings: Settings,
+    db: Database,
+    *,
+    day: date,
+    notifier: Notifier | None = None,
+    lookback_days: int = 3,
+) -> AlertRun:
+    """Holding-news alerts for items published in the last ``lookback_days``; sent once."""
+    run = AlertRun(day)
+    ctx = load_context(settings)
+    market = PreloadedMarketData(ctx.market, as_of=LATEST, until=day)
+    held = {
+        str(r.valuation.instrument)
+        for r in build_report(ctx.transactions, market, as_of=day).positions
+    }
+    if not held:
+        run.notes.append("no open positions")
+        return run
+    since: datetime = assume_istanbul(datetime.combine(day - timedelta(days=lookback_days), time()))
+    items = news_query(db, as_of=LATEST, since=since, entity_keys=sorted(held))
+    run.candidates = news_alerts(items, held)
+    run.new_ids = record(db, run.candidates)
+    run.errors = deliver(db, notifier or build_notifier(settings.telegram), run.new_ids)
     return run

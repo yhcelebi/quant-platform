@@ -10,6 +10,7 @@ from sqlalchemy import text
 
 import qp.alerts.models
 import qp.ledger.models
+import qp.news.models
 import qp.reference.models
 from qp.platform import SCHEMAS, Base, Database, create_db_engine
 from qp.platform.health import Status, check_migrations, check_schemas

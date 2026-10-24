@@ -15,7 +15,12 @@ from qp.reference.domain import (
     Instrument,
     Venue,
 )
-from qp.reference.models import CorporateActionRow, InstrumentRow, VenueRow
+from qp.reference.models import (
+    CorporateActionRow,
+    InstrumentAliasRow,
+    InstrumentRow,
+    VenueRow,
+)
 
 
 def _instrument(row: InstrumentRow) -> Instrument:
@@ -69,6 +74,14 @@ class ReferenceRepository:
     def instruments(self) -> list[Instrument]:
         rows = self.session.scalars(select(InstrumentRow).order_by(InstrumentRow.id))
         return [_instrument(r) for r in rows]
+
+    def aliases(self) -> dict[InstrumentId, list[str]]:
+        """Provider symbols per instrument (all providers, all validity ranges)."""
+        out: dict[InstrumentId, list[str]] = {}
+        rows = self.session.scalars(select(InstrumentAliasRow).order_by(InstrumentAliasRow.id))
+        for r in rows:
+            out.setdefault(InstrumentId.parse(r.instrument_id), []).append(r.provider_symbol)
+        return out
 
     def add_instrument(self, inst: Instrument) -> None:
         self.session.add(

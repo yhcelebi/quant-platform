@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<rss version="2.0">
+  <channel>
+    <title>FRB: Press Release - Monetary Policy</title>
+    <link><![CDATA[https://www.federalreserve.gov/feeds/feeds.htm]]></link>
+    <description><![CDATA[Synthetic test feed]]></description>
+    <item>
+      <title>Federal Reserve issues FOMC statement</title>
+      <link><![CDATA[https://www.federalreserve.gov/newsevents/pressreleases/monetary20261028a.htm?utm_source=rss]]></link>
+      <guid><![CDATA[https://www.federalreserve.gov/newsevents/pressreleases/monetary20261028a.htm]]></guid>
+      <description><![CDATA[The Committee decided to maintain the target range for the federal funds rate.]]></description>
+      <category>Monetary Policy</category>
+      <pubDate><![CDATA[Wed, 28 Oct 2026 18:00:00 GMT]]></pubDate>
+    </item>
+    <item>
+      <title>Federal Reserve issues FOMC statement</title>
+      <link><![CDATA[https://www.federalreserve.gov/newsevents/pressreleases/monetary20261028b.htm]]></link>
+      <guid>dup-title</guid>
+      <description><![CDATA[Same title within 48 hours: a duplicate.]]></description>
+      <pubDate>Wed, 28 Oct 2026 19:00:00 GMT</pubDate>
+    </item>
+  </channel>
+</rss>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+<title></title>
+<link rel="self" href="http://www.tcmb.gov.tr/wps/wcm/connect/TR/TCMB+TR/Bottom+Menu/Diger/RSS/Basin+Duyurulari"></link>
+<id>/wps/wcm/connect/TR/TCMB+TR/Bottom+Menu/Diger/RSS/Basin+Duyurulari</id>
+<updated>22 Tem 2024 17:13:31</updated>
+<entry>
+<title type="text"><![CDATA[Faiz Oranlarına İlişkin Basın Duyurusu (2026-45)]]></title>
+<link rel="alternate" type="text/html" href="http://www.tcmb.gov.tr/wps/wcm/connect/tr/tcmb+tr/main+menu/duyurular/basin/2026/duy2026-45"></link>
+<id>/wps/wcm/connect/TR/TCMB+TR/Main+Menu/Duyurular/Basin/2026/DUY2026-45</id>
+<published>22 Eki 2026 14:00:00</published>
+<updated>22 Eki 2026 14:00:01</updated>
+<summary type="html"> </summary>
+</entry>
+<entry>
+<title type="text"><![CDATA[Zorunlu Karşılıklara İlişkin Basın Duyurusu (2026-40)]]></title>
+<link rel="alternate" type="text/html" href="http://www.tcmb.gov.tr/wps/wcm/connect/tr/tcmb+tr/main+menu/duyurular/basin/2026/duy2026-40"></link>
+<id>/wps/wcm/connect/TR/TCMB+TR/Main+Menu/Duyurular/Basin/2026/DUY2026-40</id>
+<published>3 Ağu 2026 09:30:00</published>
+<summary type="html"> </summary>
+</entry>
+<entry>
+<title type="text"><![CDATA[Bozuk tarihli duyuru]]></title>
+<link rel="alternate" type="text/html" href="http://www.tcmb.gov.tr/x"></link>
+<id>x</id>
+<published>yarın öğleden sonra</published>
+</entry>
+</feed>

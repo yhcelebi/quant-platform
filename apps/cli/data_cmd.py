@@ -27,6 +27,7 @@ class Source(StrEnum):
     TCMB = "tcmb"
     EVDS = "evds"
     FRED = "fred"
+    FRED_CALENDAR = "fred-calendar"
 
 
 def _day(text: str | None) -> date | None:
@@ -52,7 +53,8 @@ def fetch(
     """Fetch new data into the lake (raw payloads kept; clean rows point-in-time).
 
     tcmb resumes after the newest stored bulletin; fred fetches every vintage of each series;
-    evds fetches from sources.evds.start (or --since) to today.
+    evds fetches from sources.evds.start (or --since) to today; fred-calendar fetches FRED
+    release dates (past 30 days and future) into the economic calendar.
     """
     s = settings()
     try:
@@ -63,6 +65,8 @@ def fetch(
                 report = service.fetch_evds(
                     s, db, since=_day(since), until=_day(until), series=tuple(series or ()) or None
                 )
+            elif source is Source.FRED_CALENDAR:
+                report = service.fetch_fred_calendar(s, db)
             else:
                 report = service.fetch_fred(s, db, series=tuple(series or ()) or None)
     except QPError as exc:

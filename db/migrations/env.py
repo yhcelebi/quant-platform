@@ -12,6 +12,7 @@ from sqlalchemy.engine import Connection
 import qp.alerts.models
 import qp.data.quality.models
 import qp.ledger.models
+import qp.news.models
 import qp.platform.jobs
 import qp.reference.models
 from qp.platform.db import SCHEMAS, Base, create_db_engine, database_url

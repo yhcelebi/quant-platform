@@ -7,6 +7,8 @@ Jobs (Europe/Istanbul times; job logic lives in qp, every run is recorded in ops
 - fred           daily 07:00, only with QP_SOURCES__FRED__API_KEY
 - evds           daily 17:30, only with QP_SOURCES__EVDS__API_KEY and configured series
 - alerts         Mon-Fri 18:30 (after the TCMB retry): alert rules, new events sent once
+- news           every sources.news.poll_minutes (30): official feeds, then holding-news alerts
+- fred_calendar  daily 07:10, only with the FRED key: release dates into the calendar
 
 A failing job is logged and recorded; it never stops the scheduler or other jobs.
 """
@@ -22,9 +24,10 @@ from apscheduler.triggers.base import BaseTrigger
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
-from qp.alerts.service import run_alerts
+from qp.alerts.service import run_alerts, run_news_alerts
 from qp.core import SystemClock, istanbul_date
 from qp.data import service
+from qp.news.service import fetch_news
 from qp.platform import Database, Settings, get_logger, init_platform
 
 log = get_logger("apps.workers")
@@ -66,6 +69,21 @@ def alerts(settings: Settings) -> None:
         )
 
 
+def news(settings: Settings) -> None:
+    with Database.from_settings(settings.db) as db:
+        report = fetch_news(settings, db)
+        sent = run_news_alerts(settings, db, day=istanbul_date(SystemClock().now()))
+        log.info(
+            "workers.news", new=report.new, errors=len(report.errors), alerts=len(sent.new_ids)
+        )
+
+
+def fred_calendar(settings: Settings) -> None:
+    with Database.from_settings(settings.db) as db:
+        report = service.fetch_fred_calendar(settings, db)
+        log.info("workers.fred_calendar", rows=report.rows_written, errors=len(report.errors))
+
+
 def _guard(job_id: str, func: Callable[[], None]) -> Callable[[], None]:
     def run() -> None:
         try:
@@ -95,6 +113,16 @@ def jobs(settings: Settings) -> dict[str, tuple[Callable[[], None], BaseTrigger]
         out["fred"] = (lambda: fred(settings), CronTrigger.from_crontab("0 7 * * *", timezone=TZ))
     if src.evds.api_key is not None and src.evds.api_key.get_secret_value() and src.evds.series:
         out["evds"] = (lambda: evds(settings), CronTrigger.from_crontab("30 17 * * *", timezone=TZ))
+    if any(f.enabled for f in src.news.feeds):
+        out["news"] = (
+            lambda: news(settings),
+            IntervalTrigger(minutes=src.news.poll_minutes, timezone=UTC),
+        )
+    if src.fred.api_key is not None and src.fred.api_key.get_secret_value():
+        out["fred_calendar"] = (
+            lambda: fred_calendar(settings),
+            CronTrigger.from_crontab("10 7 * * *", timezone=TZ),
+        )
     if settings.alerts.enabled:
         out["alerts"] = (
             lambda: alerts(settings),

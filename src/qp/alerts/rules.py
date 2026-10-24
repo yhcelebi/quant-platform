@@ -10,7 +10,8 @@ from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
 
-from qp.core import to_float64, to_float64_list
+from qp.core import istanbul_date, to_float64, to_float64_list
+from qp.news.store import NewsItem
 from qp.performance.metrics import Summary
 from qp.portfolio.holdings import HoldingsReport
 from qp.stats import historical_var
@@ -115,4 +116,23 @@ def data_alerts(report: HoldingsReport, t: Thresholds) -> list[AlertCandidate]:
                     f"({(report.as_of - row.price.valid_date).days} days old on {report.as_of})",
                 )
             )
+    return out
+
+
+def news_alerts(items: list[NewsItem], held: set[str]) -> list[AlertCandidate]:
+    """One alert per (news item, held instrument) the item is linked to (ADR 0012, 12)."""
+    out: list[AlertCandidate] = []
+    for item in items:
+        for e in item.entities:
+            if e.kind == "instrument" and e.key in held:
+                out.append(
+                    AlertCandidate(
+                        "holding_news",
+                        f"{e.key} #{item.id}",
+                        istanbul_date(item.published_at),
+                        "info",
+                        f"{e.key} in the news ({item.source}, matched '{e.matched}'): "
+                        f"{item.title} {item.url}",
+                    )
+                )
     return out

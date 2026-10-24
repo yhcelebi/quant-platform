@@ -70,6 +70,7 @@ def test_workers_schedule(config_dir: Path, monkeypatch: pytest.MonkeyPatch) -> 
         "heartbeat",
         "tcmb_fx",
         "tcmb_fx_retry",
+        "news",
         "alerts",
     ]
     tcmb = scheduler.get_job("tcmb_fx")
@@ -77,7 +78,7 @@ def test_workers_schedule(config_dir: Path, monkeypatch: pytest.MonkeyPatch) -> 
     assert str(tcmb.trigger.timezone) == "Europe/Istanbul"
     monkeypatch.setenv("QP_SOURCES__FRED__API_KEY", "k")  # keyed sources join the schedule
     keyed = build_scheduler(load_settings(config_dir=config_dir, env_file=None))
-    assert "fred" in [j.id for j in keyed.get_jobs()]
+    assert {"fred", "fred_calendar"} <= {j.id for j in keyed.get_jobs()}
     assert "evds" not in [j.id for j in keyed.get_jobs()]  # no key and no series
     monkeypatch.setenv("QP_ALERTS__ENABLED", "false")
     quiet = build_scheduler(load_settings(config_dir=config_dir, env_file=None))

@@ -10,7 +10,17 @@ from rich.console import Console
 from rich.table import Table
 
 import qp
-from apps.cli import alerts_cmd, data_cmd, ledger_cmd, perf_cmd, portfolio_cmd, ref_cmd, risk_cmd
+from apps.cli import (
+    alerts_cmd,
+    data_cmd,
+    ledger_cmd,
+    macro_cmd,
+    news_cmd,
+    perf_cmd,
+    portfolio_cmd,
+    ref_cmd,
+    risk_cmd,
+)
 from qp.core.errors import ConfigError
 from qp.platform import init_platform
 from qp.platform.health import Status, run_checks
@@ -23,6 +33,8 @@ app.add_typer(data_cmd.app, name="data")
 app.add_typer(perf_cmd.app, name="perf")
 app.add_typer(risk_cmd.app, name="risk")
 app.add_typer(alerts_cmd.app, name="alerts")
+app.add_typer(macro_cmd.app, name="macro")
+app.add_typer(news_cmd.app, name="news")
 console = Console()
 
 _STYLE = {Status.OK: "green", Status.WARN: "yellow", Status.FAIL: "red"}

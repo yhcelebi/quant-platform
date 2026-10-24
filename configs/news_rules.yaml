@@ -1,0 +1,13 @@
+# Rule-based news tags (ADR 0012). Keywords match whole words on Turkish-folded text;
+# a trailing * matches word prefixes (e.g. enflasyon* also matches enflasyonun).
+tags:
+  interest_rates: [faiz*, politika faizi, interest rate*, rate decision, federal funds, fomc, monetary policy, para politikası]
+  inflation: [enflasyon*, tüfe, üfe, inflation, consumer price*, cpi, hicp, pce]
+  fx: [kur, döviz*, dolar, euro, exchange rate*, reserve*, rezerv*]
+  macroprudential: [makroihtiyati, macroprudential, kredi büyüme*, credit growth, zorunlu karşılık*, reserve requirement*]
+  liquidity: [likidite*, liquidity, repo, swap*, açık piyasa*, open market]
+  growth: [büyüme*, gdp, gsyh, employment, istihdam*, işsizlik*, unemployment, payroll*]
+  financial_stability: [finansal istikrar*, financial stability, stress test*]
+  dividend: [temettü*, kar payı, dividend*]
+  earnings: [bilanço*, finansal sonuç*, earnings, quarterly results]
+  speech: [konuşma*, sunum*, speech, interview, testimony, röportaj*]
