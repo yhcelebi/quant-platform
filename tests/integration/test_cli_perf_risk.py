@@ -73,3 +73,31 @@ def test_perf_and_risk_on_examples(
     assert "unavailable" in risk  # 8 daily returns: VaR needs 60
     assert "AAPL.NASDAQ" in risk
     assert "Concentration: HHI" in risk
+
+
+def test_terminal_overview_performance_risk_pages(
+    migrated_db: Database, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    from datetime import date
+
+    from streamlit.testing.v1 import AppTest
+
+    from apps.terminal.state import _context
+
+    _context.clear()  # never a context cached from another test's database
+    test_perf_and_risk_on_examples(migrated_db, monkeypatch, tmp_path)  # populate the ledger
+    app_file = str(REPO / "apps" / "terminal" / "app.py")
+    at = AppTest.from_file(app_file, default_timeout=60).run()
+    assert not at.exception
+    at.switch_page("pages/performance.py").run()
+    at.date_input[0].set_value(date(2025, 1, 14)).run()
+    assert not at.exception
+    assert not at.error
+    metrics = {m.label: m.value for m in at.metric}
+    assert metrics["TWR 2025-01-02 → 2025-01-14"] == "28.42%"
+    assert metrics["P&L (TRY)"] == "11,389.50"
+    at.switch_page("pages/risk.py").run()
+    at.date_input[0].set_value(date(2025, 1, 14)).run()
+    assert not at.exception
+    assert not at.error
+    assert any("Unavailable" in i.value for i in at.info)  # 8 days of returns: VaR needs 60

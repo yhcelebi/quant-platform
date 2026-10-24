@@ -132,7 +132,7 @@ module = ["qp.core", "qp.core.*", "qp.platform", "qp.platform.*", "qp.ledger", "
 strict = true
 
 [[tool.mypy.overrides]]
-module = ["apscheduler.*", "streamlit.*", "pyarrow", "pyarrow.*", "exchange_calendars", "exchange_calendars.*"]
+module = ["apscheduler.*", "streamlit.*", "plotly", "plotly.*", "pyarrow", "pyarrow.*", "exchange_calendars", "exchange_calendars.*"]
 ignore_missing_imports = true
 
 # --------------------------------------------------------------------------- pytest
