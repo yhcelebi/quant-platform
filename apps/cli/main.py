@@ -13,6 +13,7 @@ import qp
 from apps.cli import (
     alerts_cmd,
     data_cmd,
+    journal_cmd,
     ledger_cmd,
     macro_cmd,
     news_cmd,
@@ -37,6 +38,7 @@ app.add_typer(alerts_cmd.app, name="alerts")
 app.add_typer(macro_cmd.app, name="macro")
 app.add_typer(news_cmd.app, name="news")
 app.add_typer(research_cmd.app, name="research")
+app.add_typer(journal_cmd.app, name="journal")
 console = Console()
 
 _STYLE = {Status.OK: "green", Status.WARN: "yellow", Status.FAIL: "red"}

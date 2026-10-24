@@ -11,6 +11,7 @@ from sqlalchemy.engine import Connection
 
 import qp.alerts.models
 import qp.data.quality.models
+import qp.decisions.models
 import qp.ledger.models
 import qp.news.models
 import qp.platform.jobs

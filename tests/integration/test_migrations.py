@@ -9,6 +9,7 @@ from alembic.runtime.migration import MigrationContext
 from sqlalchemy import text
 
 import qp.alerts.models
+import qp.decisions.models
 import qp.ledger.models
 import qp.news.models
 import qp.reference.models

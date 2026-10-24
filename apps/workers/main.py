@@ -6,7 +6,8 @@ Jobs (Europe/Istanbul times; job logic lives in qp, every run is recorded in ops
 - tcmb_fx        Mon-Fri 15:45 and 18:15: fetch new TCMB bulletins, then quality checks
 - fred           daily 07:00, only with QP_SOURCES__FRED__API_KEY
 - evds           daily 17:30, only with QP_SOURCES__EVDS__API_KEY and configured series
-- alerts         Mon-Fri 18:30 (after the TCMB retry): alert rules, new events sent once
+- alerts         Mon-Fri 18:30 (after the TCMB retry): alert rules and thesis reviews due,
+                 new events sent once
 - news           every sources.news.poll_minutes (30): official feeds, then holding-news alerts
 - fred_calendar  daily 07:10, only with the FRED key: release dates into the calendar
 
@@ -29,6 +30,8 @@ from qp.core import SystemClock, istanbul_date
 from qp.data import service
 from qp.news.service import fetch_news
 from qp.platform import Database, Settings, get_logger, init_platform
+from qp.platform.notifier import build_notifier
+from qp.reporting.daily import send_review_alerts
 
 log = get_logger("apps.workers")
 TZ = "Europe/Istanbul"
@@ -60,7 +63,10 @@ def evds(settings: Settings) -> None:
 
 def alerts(settings: Settings) -> None:
     with Database.from_settings(settings.db) as db:
-        result = run_alerts(settings, db, day=istanbul_date(SystemClock().now()))
+        day = istanbul_date(SystemClock().now())
+        result = run_alerts(settings, db, day=day)
+        reviews = send_review_alerts(db, day, build_notifier(settings.telegram))
+        log.info("workers.thesis_reviews", new=len(reviews))
         log.info(
             "workers.alerts",
             candidates=len(result.candidates),
