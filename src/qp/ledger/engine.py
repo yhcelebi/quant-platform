@@ -16,7 +16,7 @@ Rules (docs/DOMAIN.md, ADR 0005):
 from __future__ import annotations
 
 from collections import defaultdict
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator
 from dataclasses import dataclass, field
 from datetime import UTC, date, datetime
 from decimal import Decimal
@@ -156,6 +156,18 @@ class ExternalFlow:
     transaction_id: int | None
 
 
+@dataclass(frozen=True, slots=True)
+class InTransit:
+    """Shares (``instrument`` set) or cash (``instrument`` None) between accounts."""
+
+    transfer_id: str
+    from_account: str
+    sent: date
+    instrument: InstrumentId | None
+    currency: Currency
+    quantity: Decimal  # shares, or the cash amount
+
+
 @dataclass
 class _InTransit:
     tx: Transaction
@@ -197,6 +209,13 @@ class LedgerState:
             if v != 0
         }
 
+    def in_transit(self) -> list[InTransit]:
+        """Assets sent by ``transfer_out`` and not yet received, by transfer id."""
+        return [
+            InTransit(tid, p.tx.account, p.tx.trade_date, p.instrument, p.currency, p.quantity)
+            for tid, p in sorted(self._transit.items())
+        ]
+
     def quantity_before(self, account: str, instrument: InstrumentId, day: date) -> Decimal:
         """Quantity held at the end of the last day strictly before ``day``."""
         qty = ZERO
@@ -208,14 +227,11 @@ class LedgerState:
 
 
 # --------------------------------------------------------------------------- replay
-def replay(
-    transactions: Iterable[Transaction],
-    *,
-    as_of: date | None = None,
-    known_at: datetime | None = None,
-) -> LedgerState:
-    """Derive ledger state from facts. ``as_of`` filters by trade date (inclusive);
-    ``known_at`` filters by ``recorded_at`` (inclusive), giving 'as known at that time'."""
+def active_transactions(
+    transactions: Iterable[Transaction], *, known_at: datetime | None = None
+) -> list[Transaction]:
+    """The facts replay applies, in replay order: recorded by ``known_at`` (inclusive, when
+    given), reversals and the transactions they cancel removed."""
     txs = list(transactions)
     if known_at is not None:
         txs = [t for t in txs if t.recorded_at <= known_at]
@@ -237,18 +253,45 @@ def replay(
         for t in txs
         if t.tx_type is not TxType.REVERSAL and (t.id is None or t.id not in cancelled)
     ]
+    active.sort(key=order_key)
+    return active
+
+
+def replay_steps(
+    transactions: Iterable[Transaction],
+    *,
+    as_of: date | None = None,
+    known_at: datetime | None = None,
+) -> Iterator[tuple[date, LedgerState]]:
+    """Replay day by day: yield ``(trade_date, state)`` after the last transaction of each
+    trade date (up to ``as_of``). The same state object is updated and yielded again, so
+    read it before advancing. One replay gives every day's state (daily histories)."""
+    active = active_transactions(transactions, known_at=known_at)
     if as_of is not None:
         active = [t for t in active if t.trade_date <= as_of]
-    active.sort(key=order_key)
-
     state = LedgerState()
-    for tx in active:
+    for i, tx in enumerate(active):
         try:
             _apply(state, tx)
         except LedgerError:
             raise
         except (ArithmeticError, ValueError) as exc:
             raise LedgerError(f"{tx.describe()}: {exc}") from exc
+        if i + 1 == len(active) or active[i + 1].trade_date != tx.trade_date:
+            yield tx.trade_date, state
+
+
+def replay(
+    transactions: Iterable[Transaction],
+    *,
+    as_of: date | None = None,
+    known_at: datetime | None = None,
+) -> LedgerState:
+    """Derive ledger state from facts. ``as_of`` filters by trade date (inclusive);
+    ``known_at`` filters by ``recorded_at`` (inclusive), giving 'as known at that time'."""
+    state = LedgerState()
+    for _, state in replay_steps(transactions, as_of=as_of, known_at=known_at):  # noqa: B007
+        pass
     for transfer_id, pending in state._transit.items():
         state.warnings.append(
             f"transfer {transfer_id} from {pending.tx.account} has no matching transfer_in yet"

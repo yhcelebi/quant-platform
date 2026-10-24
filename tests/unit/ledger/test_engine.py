@@ -10,7 +10,7 @@ from hypothesis import strategies as st
 from qp.core import TRY, USD, Currency, InstrumentId, QPValidationError
 from qp.ledger import builders as b
 from qp.ledger.domain import LedgerError, Leg, LegKind, Transaction, TxType
-from qp.ledger.engine import replay
+from qp.ledger.engine import replay, replay_steps
 from qp.reference.domain import CorporateAction, CorporateActionType
 
 THYAO = InstrumentId.parse("THYAO.BIST")
@@ -585,3 +585,56 @@ def test_negative_cash_is_flagged() -> None:
     assert any("cash is negative" in w for w in s.warnings)
     funded = [b.cash_flow(c(0), TxType.DEPOSIT, TRY, Decimal("100")), buy(1, "10", "10")]
     assert not any("negative" in w for w in replay(funded).warnings)
+
+
+# ---------------------------------------------------------------- replay_steps
+def test_replay_steps_match_replay_at_each_date() -> None:
+    txs = [
+        b.cash_flow(c(0), TxType.DEPOSIT, TRY, Decimal(5000)),
+        buy(1, "100", "10", "1"),
+        buy(1, "50", "12"),
+        sell(3, "30", "15", "1"),
+        b.cash_flow(c(5), TxType.WITHDRAWAL, TRY, Decimal(100)),
+    ]
+    seen: list[date] = []
+    for day, state in replay_steps(txs):
+        seen.append(day)
+        expected = replay(txs, as_of=day)
+        assert state.open_positions() == expected.open_positions()
+        assert state.cash_balances() == expected.cash_balances()
+        assert state.realizations == expected.realizations
+    assert seen == [date(2025, 1, 1) + timedelta(days=d) for d in (0, 1, 3, 5)]
+
+
+def test_replay_steps_honour_as_of_known_at_and_reversals() -> None:
+    first = buy(1, "10", "10")
+    first = Transaction(**{**_fields(first), "id": 1})
+    rev = b.reversal(c(2), 1)
+    later = buy(4, "5", "10")
+    days = [d for d, _ in replay_steps([first, rev, later], as_of=date(2025, 1, 4))]
+    assert days == []  # the only transaction up to Jan 4 was reversed
+    days = [d for d, _ in replay_steps([first, rev, later], known_at=T0 + timedelta(days=1))]
+    assert days == [date(2025, 1, 2)]  # the reversal was not yet recorded
+
+
+def test_in_transit_is_visible_until_received() -> None:
+    txs = [
+        buy(0, "10", "10"),
+        b.securities_transfer(c(1), TxType.TRANSFER_OUT, "t1", THYAO, TRY, Decimal(4)),
+        b.securities_transfer(c(3, "B"), TxType.TRANSFER_IN, "t1", THYAO, TRY, Decimal(4)),
+    ]
+    mid = replay(txs, as_of=date(2025, 1, 2))
+    [item] = mid.in_transit()
+    assert (item.transfer_id, item.from_account, item.instrument, item.quantity) == (
+        "t1",
+        "A",
+        THYAO,
+        Decimal(4),
+    )
+    assert replay(txs).in_transit() == []
+
+
+def _fields(tx: Transaction) -> dict[str, object]:
+    from dataclasses import fields
+
+    return {f.name: getattr(tx, f.name) for f in fields(tx) if f.init}
