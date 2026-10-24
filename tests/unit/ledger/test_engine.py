@@ -631,4 +631,3 @@ def test_in_transit_is_visible_until_received() -> None:
         Decimal(4),
     )
     assert replay(txs).in_transit() == []
-

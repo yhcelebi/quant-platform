@@ -137,8 +137,26 @@ class ManualMarketData:
                 best = item  # later valid_date, or a later revision of the same date
         return best
 
+    @staticmethod
+    def _history[T: (PricePoint, FxPoint)](items: list[T], until: date, as_of: datetime) -> list[T]:
+        by_date: dict[date, T] = {}
+        for item in items:  # sorted by (valid_date, known_time): later revisions overwrite
+            if item.valid_date > until:
+                break
+            if item.known_time <= as_of:
+                by_date[item.valid_date] = item
+        return list(by_date.values())
+
     def price(self, instrument: InstrumentId, on: date, *, as_of: datetime) -> PricePoint | None:
         return self._pick(self._prices.get(instrument, []), on, as_of)
+
+    def price_history(
+        self, instrument: InstrumentId, until: date, *, as_of: datetime
+    ) -> list[PricePoint]:
+        return self._history(self._prices.get(instrument, []), until, as_of)
+
+    def fx_history(self, currency: Currency, until: date, *, as_of: datetime) -> list[FxPoint]:
+        return self._history(self._fx.get(currency, []), until, as_of)
 
     def fx_try(self, currency: Currency, on: date, *, as_of: datetime) -> FxPoint | None:
         return self._pick(self._fx.get(currency, []), on, as_of)
