@@ -12,7 +12,7 @@ from sqlalchemy import func, select
 
 from qp.core import Clock, QPError, SystemClock, istanbul_date
 from qp.data import calendar
-from qp.data.connectors import evds, fred, tcmb
+from qp.data.connectors import evds, fred, sec, tcmb
 from qp.data.connectors.http import HttpClient
 from qp.data.connectors.tcmb import FetchReport
 from qp.data.lake import CleanStore, Dataset, RawStore
@@ -24,7 +24,13 @@ from qp.platform.jobs import JobRun, job_run
 from qp.platform.lake import LakePaths
 from qp.platform.settings import Settings
 
-DATASETS: tuple[Dataset, ...] = (tcmb.DATASET, evds.DATASET, fred.DATASET, calendar.DATASET)
+DATASETS: tuple[Dataset, ...] = (
+    tcmb.DATASET,
+    evds.DATASET,
+    fred.DATASET,
+    calendar.DATASET,
+    sec.DATASET,
+)
 DEFAULT_LOOKBACK = timedelta(days=30)
 
 
@@ -276,3 +282,31 @@ def lake_snapshot(settings: Settings) -> dict[str, str | None]:
         k = clean.max_known_time(ds)
         out[ds.name] = k.isoformat() if k is not None else None
     return out
+
+
+def fetch_sec(
+    settings: Settings,
+    db: Database,
+    *,
+    tickers: tuple[str, ...] | None = None,
+    clock: Clock | None = None,
+) -> FetchReport:
+    """SEC company facts for the configured tickers (needs the contact User-Agent)."""
+    clock = clock or SystemClock()
+    cfg = settings.sources.sec
+    if not cfg.user_agent:
+        raise QPError(
+            "SEC needs a contact User-Agent: set QP_SOURCES__SEC__USER_AGENT in .env, e.g. "
+            '"qp-personal Your Name you@example.com"'
+        )
+    codes = tickers or cfg.tickers
+    if not codes:
+        raise QPError("no tickers (sources.sec.tickers in configs/base.yaml, or --series)")
+    raw, clean = lake(settings)
+    with (
+        job_run(db, "fetch:sec") as run,
+        HttpClient(user_agent=cfg.user_agent, min_interval_s=cfg.min_interval_s) as client,
+    ):
+        report = sec.fetch_companies(client, raw, clean, codes, now=clock.now)
+        _record(run, report, f"{', '.join(codes)}: ")
+    return report

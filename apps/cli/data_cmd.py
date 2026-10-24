@@ -28,6 +28,7 @@ class Source(StrEnum):
     EVDS = "evds"
     FRED = "fred"
     FRED_CALENDAR = "fred-calendar"
+    SEC = "sec"
 
 
 def _day(text: str | None) -> date | None:
@@ -54,7 +55,8 @@ def fetch(
 
     tcmb resumes after the newest stored bulletin; fred fetches every vintage of each series;
     evds fetches from sources.evds.start (or --since) to today; fred-calendar fetches FRED
-    release dates (past 30 days and future) into the economic calendar.
+    release dates (past 30 days and future) into the economic calendar; sec fetches XBRL
+    company facts for sources.sec.tickers (or --series TICKER).
     """
     s = settings()
     try:
@@ -65,6 +67,8 @@ def fetch(
                 report = service.fetch_evds(
                     s, db, since=_day(since), until=_day(until), series=tuple(series or ()) or None
                 )
+            elif source is Source.SEC:
+                report = service.fetch_sec(s, db, tickers=tuple(series or ()) or None)
             elif source is Source.FRED_CALENDAR:
                 report = service.fetch_fred_calendar(s, db)
             else:

@@ -31,6 +31,9 @@ sources:                # phase 2 connectors; API keys only via env/.env (QP_SOU
     # US macro for configs/indicators.yaml and the Treasury curve (ADR 0012)
     series: [CPIAUCSL, CPILFESL, PCEPILFE, UNRATE, PAYEMS, GDPC1, INDPRO, DFF, DTWEXBGS,
              DGS1MO, DGS3MO, DGS6MO, DGS1, DGS2, DGS3, DGS5, DGS7, DGS10, DGS20, DGS30]
+  sec:                  # SEC EDGAR company facts (ADR 0013); needs QP_SOURCES__SEC__USER_AGENT
+    min_interval_s: 0.2
+    tickers: []         # e.g. [AAPL, MSFT]; US-listed companies only
   news:                 # official institutions only (ADR 0012); polled every 30 min at most
     min_interval_s: 2.0
     poll_minutes: 30

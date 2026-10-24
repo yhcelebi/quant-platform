@@ -98,6 +98,16 @@ class FredSettings(_Section):
     series: tuple[str, ...] = ("CPIAUCSL", "DGS10", "DFF")
 
 
+class SecSettings(_Section):
+    """SEC EDGAR (ADR 0013, 8). SEC asks automated clients to declare a User-Agent with a
+    contact, e.g. "qp-personal Your Name you@example.com"; set it in .env
+    (QP_SOURCES__SEC__USER_AGENT). Without it nothing is fetched."""
+
+    user_agent: str | None = None
+    min_interval_s: float = Field(default=0.2, ge=0.1)  # 5 requests/s; SEC allows 10
+    tickers: tuple[str, ...] = ()
+
+
 class FeedSettings(_Section):
     """One RSS/Atom feed (ADR 0012, 6). ``naive_tz``: zone for dates without an offset."""
 
@@ -122,6 +132,7 @@ class SourcesSettings(_Section):
     evds: EvdsSettings = EvdsSettings()
     fred: FredSettings = FredSettings()
     news: NewsSettings = NewsSettings()
+    sec: SecSettings = SecSettings()
     user_agent: str = "qp-personal/0.1 (personal research platform)"
 
 
