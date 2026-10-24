@@ -62,3 +62,32 @@ def test_journal_flow(migrated_db: Database, tmp_path: Path) -> None:
         conn.execute(text("UPDATE journal.theses SET title = 'edited'"))
     with db.engine.begin() as conn, pytest.raises(DBAPIError, match="append-only"):
         conn.execute(text("DELETE FROM journal.entries"))
+
+
+def test_journal_and_research_pages(
+    migrated_db: Database, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    from streamlit.testing.v1 import AppTest
+
+    url = migrated_db.engine.url
+    for key, value in {
+        "QP_DB__HOST": url.host, "QP_DB__PORT": str(url.port), "QP_DB__NAME": url.database,
+        "QP_DB__USER": url.username, "QP_DB__PASSWORD": url.password,
+        "QP_LAKE__ROOT": str(tmp_path / "lake"),
+    }.items():  # fmt: skip
+        monkeypatch.setenv(key, str(value))
+    journal.add_thesis(
+        migrated_db,
+        title="Due thesis",
+        thesis="t",
+        invalidation="i",
+        first_review=date(2020, 1, 1),
+    )
+    repo = Path(__file__).resolve().parents[2]
+    at = AppTest.from_file(str(repo / "apps" / "terminal" / "app.py"), default_timeout=30).run()
+    at.switch_page("pages/journal.py").run()
+    assert not at.exception
+    assert any("1 review(s) due" in w.value for w in at.warning)
+    at.switch_page("pages/research.py").run()
+    assert not at.exception
+    assert any("usdtry_volatility" in str(df.value) for df in at.dataframe)
