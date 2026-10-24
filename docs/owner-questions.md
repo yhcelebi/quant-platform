@@ -126,3 +126,13 @@ Recommended defaults are in effect (ADR 0010); change any by answering.
     you to check against the official pages.
 24. **EVDS codes** in `configs/indicators.yaml` (TÜFE, USD/TRY) are marked "to confirm" and
     need your key.
+
+## Phase 5 — research lab (built 2026-10-25, recommended defaults)
+
+25. **SEC User-Agent**: SEC asks automated clients for a name and contact email. Put yours
+    in `.env` as `QP_SOURCES__SEC__USER_AGENT="qp-personal <name> <email>"` and list tickers
+    in `sources.sec.tickers`. I have not used your email anywhere.
+26. **First study result** (`usdtry_volatility`): GARCH(1,1) does not fit TCMB USD/TRY daily
+    changes (fit at a parameter boundary, flagged unreliable); returns are stationary with
+    about 3% annualized volatility and ~19% annualized drift over 2025-01..2026-10. Worth a
+    different model (e.g. regime or jump) if you care about TRY volatility.

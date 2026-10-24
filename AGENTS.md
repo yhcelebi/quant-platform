@@ -129,6 +129,9 @@ Defined in the `Makefile` (built in Phase 0):
 | `uv run qp alerts run [--dry-run] / list` | alert rules, sent once per key |
 | `uv run qp news fetch / list / relink` | official feeds, entities, tags |
 | `uv run qp macro indicators / show ID / revisions / curve / calendar` | macro center |
+| `uv run qp research list / run ID / show ID` | studies with provenance |
+| `uv run qp journal add / list / show / review / note / watch` | decisions journal |
+| `uv run qp value fundamentals / multiples / dcf` | SEC fundamentals, valuation |
 
 Local PostgreSQL 16 runs in Docker on `127.0.0.1:5433` (ADR 0002). Integration tests skip
 without a database locally; CI sets `QP_REQUIRE_DB=1` so they must run there.
