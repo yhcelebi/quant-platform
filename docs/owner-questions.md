@@ -80,3 +80,37 @@ below). Q7, Q8 and Q14 are not built until you answer. Q9 blocks the FRED and EV
     restarted it with `open -a Docker` each time. Do you quit it, or does it crash or sleep?
     If you want the database always on, enable "Start Docker Desktop when you sign in" and
     turn off Resource Saver in Docker Desktop settings.
+
+## Phase 3 — performance and risk (built 2026-10-25)
+
+Recommended defaults are in effect (ADR 0010); change any by answering.
+
+16. **Proposed reference cases** for `tests/reference/` (owner-owned; add them if you agree,
+    I will wire the loader). Each is hand-calculated in the test docstrings:
+    - *g, TWR with a transfer out of the scope*: account A deposits 1000, buys 10 @ 50; price
+      60, sends 5 shares to B; price 70 when B receives them. Scope {A}: daily values 1000,
+      1000, 1100, 1100, 850 with flow -350 on the last day; TWR = 0.2
+      (`tests/unit/performance/test_history_metrics.py`).
+    - *h, attribution*: the 6-10 Jan 2025 example in
+      `tests/unit/performance/test_attribution_benchmarks.py`: P&L 1083 = THYAO 745 + AAPL 228
+      (price 148, FX 80) + USD cash 120 + TRY cash 0 + fees -10.
+    - *i, historical VaR*: losses 1..100 → VaR95 95, ES95 97.5, VaR99 99, ES99 99.5
+      (`tests/unit/stats/test_descriptive.py`).
+    - *j, the example ledger end to end*: TWR 28.42%, real 26.02%, attribution 11389.50
+      (`tests/integration/test_cli_perf_risk.py`).
+
+17. **Flow timing.** Flows count at the end of their day (the day's market move belongs to
+    the capital before the flow). *Recommended: keep.* Alternative: start of day.
+
+18. **Inflation interpolation.** A monthly TÜFE level is treated as the end-of-month level
+    and interpolated geometrically inside the month. *Recommended: keep.* Alternative: step
+    (use the last published month as is).
+
+19. **Benchmarks.** Configured: USD/TRY, EUR/TRY, BIST 100 (`XU100.BIST`), S&P 500 TR
+    (`SPXTR.INDEX`), gold (`XAUUSD.SPOT`, USD per ounce), TRY deposit rate (series
+    `TRY_DEPOSIT`). Only USD/TRY and EUR/TRY have data today (TCMB). Which do you want, and
+    which deposit rate (EVDS code) should stand for "TRY deposit"?
+
+20. **Alert thresholds**: daily loss 3%, drawdown 10%, VaR 99%, stale price 7 days. Telegram
+    needs `QP_TELEGRAM__BOT_TOKEN` and `QP_TELEGRAM__CHAT_ID` in `.env`; until then alerts go
+    to the log and `qp alerts list`.

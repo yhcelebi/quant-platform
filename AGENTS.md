@@ -124,6 +124,9 @@ Defined in the `Makefile` (built in Phase 0):
 | `uv run qp data fetch tcmb\|evds\|fred [--since] [--until] [--series]` | fill the lake   |
 | `uv run qp data quality / status / evds-series CODE` | checks, freshness, EVDS code lookup |
 | `uv run qp ref actions list / accept ID --note / reject ID --note` | corporate-action queue |
+| `uv run qp perf show [--view try\|usd\|real] [--start] [--end] / attribution` | returns, benchmarks, P&L |
+| `uv run qp risk show [--as-of]` | VaR/ES, exposures, correlation |
+| `uv run qp alerts run [--dry-run] / list` | alert rules, sent once per key |
 
 Local PostgreSQL 16 runs in Docker on `127.0.0.1:5433` (ADR 0002). Integration tests skip
 without a database locally; CI sets `QP_REQUIRE_DB=1` so they must run there.

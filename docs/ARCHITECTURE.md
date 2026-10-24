@@ -26,7 +26,7 @@ Apps are thin: argument parsing, wiring and presentation. Every calculation live
 | `trading` | strategies, promotions, orders, fills, positions_snapshot, reconciliations, trading_state, heartbeats |
 | `news`    | items, item_entities, item_tags, sources                                                   |
 | `journal` | theses, entries, reviews, watchlists                                                       |
-| `ops`     | job_runs, data_quality_results, alerts, alert_events                                       |
+| `ops`     | job_runs, data_quality_results, alert_events (alert rules are config: `alerts:`)           |
 
 Local server: Docker Compose, `postgres:16.15`, bound to `127.0.0.1:5433`.
 Migrations: Alembic in `db/migrations/` (the URL comes from qp settings, never alembic.ini). The ledger tables are append-only (no UPDATE/DELETE
