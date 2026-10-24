@@ -26,7 +26,7 @@ format: ## Auto-format and auto-fix
 	$(UV) run ruff format .
 	$(UV) run ruff check --fix .
 
-typecheck: ## mypy (strict on core, platform, ledger, risk)
+typecheck: ## mypy (strict on core, platform, ledger, stats, performance, risk, alerts)
 	$(UV) run mypy
 
 imports: ## import-linter layer and library-boundary contracts

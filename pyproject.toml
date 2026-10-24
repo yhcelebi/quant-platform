@@ -128,7 +128,7 @@ no_implicit_optional = true
 plugins = ["pydantic.mypy"]
 
 [[tool.mypy.overrides]]
-module = ["qp.core", "qp.core.*", "qp.platform", "qp.platform.*", "qp.ledger", "qp.ledger.*", "qp.risk", "qp.risk.*"]
+module = ["qp.core", "qp.core.*", "qp.platform", "qp.platform.*", "qp.ledger", "qp.ledger.*", "qp.risk", "qp.risk.*", "qp.stats", "qp.stats.*", "qp.performance", "qp.performance.*", "qp.alerts", "qp.alerts.*"]
 strict = true
 
 [[tool.mypy.overrides]]
