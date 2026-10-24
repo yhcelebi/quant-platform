@@ -28,7 +28,9 @@ sources:                # phase 2 connectors; API keys only via env/.env (QP_SOU
     series: []
   fred:
     min_interval_s: 1.0
-    series: [CPIAUCSL, DGS10, DFF]   # US CPI (SA), 10y Treasury, Fed funds effective
+    # US macro for configs/indicators.yaml and the Treasury curve (ADR 0012)
+    series: [CPIAUCSL, CPILFESL, PCEPILFE, UNRATE, PAYEMS, GDPC1, INDPRO, DFF, DTWEXBGS,
+             DGS1MO, DGS3MO, DGS6MO, DGS1, DGS2, DGS3, DGS5, DGS7, DGS10, DGS20, DGS30]
 
 log:
   level: INFO

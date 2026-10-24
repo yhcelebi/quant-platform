@@ -1,0 +1,20 @@
+# Indicator registry (ADR 0012). `series` is a qp series id: fred:ID, evds:CODE, or an id in
+# data/manual/series.csv. An indicator without data is listed and shown as unavailable.
+# FRED ids are fetched when listed in sources.fred.series (configs/base.yaml) and keyed.
+# EVDS codes marked "confirm" must be checked with `qp data evds-series CODE` (needs a key).
+indicators:
+  # --- Türkiye
+  - {id: tr_cpi, name: "TÜFE (CPI, 2025=100)", series: "evds:TP.TUKFIY2025.GENEL", frequency: monthly, unit: index, category: inflation, country: TR, note: "EVDS code to confirm"}
+  - {id: tr_usdtry, name: "USD/TRY (TCMB indicative)", series: "evds:TP.DK.USD.A.YTL", frequency: daily, unit: TRY, category: fx, country: TR, note: "EVDS code to confirm; TCMB bulletin rates are in the lake already"}
+  # --- United States
+  - {id: us_cpi, name: "CPI, all items (SA)", series: "fred:CPIAUCSL", frequency: monthly, unit: index 1982-84=100, category: inflation, country: US}
+  - {id: us_core_cpi, name: "Core CPI (SA)", series: "fred:CPILFESL", frequency: monthly, unit: index 1982-84=100, category: inflation, country: US}
+  - {id: us_core_pce, name: "Core PCE price index", series: "fred:PCEPILFE", frequency: monthly, unit: index 2017=100, category: inflation, country: US}
+  - {id: us_unemployment, name: "Unemployment rate", series: "fred:UNRATE", frequency: monthly, unit: percent, category: labour, country: US}
+  - {id: us_payrolls, name: "Nonfarm payrolls", series: "fred:PAYEMS", frequency: monthly, unit: thousands, category: labour, country: US}
+  - {id: us_real_gdp, name: "Real GDP", series: "fred:GDPC1", frequency: quarterly, unit: billions of chained 2017 USD, category: activity, country: US}
+  - {id: us_indpro, name: "Industrial production", series: "fred:INDPRO", frequency: monthly, unit: index 2017=100, category: activity, country: US}
+  - {id: us_fed_funds, name: "Fed funds effective rate", series: "fred:DFF", frequency: daily, unit: percent, category: rates, country: US}
+  - {id: us_10y, name: "10-year Treasury yield", series: "fred:DGS10", frequency: daily, unit: percent, category: rates, country: US}
+  - {id: us_2y, name: "2-year Treasury yield", series: "fred:DGS2", frequency: daily, unit: percent, category: rates, country: US}
+  - {id: us_dollar, name: "Broad dollar index", series: "fred:DTWEXBGS", frequency: daily, unit: index Jan 2006=100, category: fx, country: US}
