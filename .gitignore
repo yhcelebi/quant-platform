@@ -27,3 +27,6 @@ coverage.xml
 .DS_Store
 .idea/
 .vscode/
+
+# graphify knowledge graph output (rebuild with /graphify . or graphify extract . --code-only)
+graphify-out/

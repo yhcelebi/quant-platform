@@ -4,7 +4,7 @@ SHELL := /bin/bash
 UV ?= uv
 
 .PHONY: help setup lock lint format typecheck imports test test-cov check \
-        db-up db-down migrate doctor terminal workers trader-paper deps-smoke
+        db-up db-down migrate doctor terminal workers trader-paper deps-smoke graph
 
 help: ## Show this help
 	@grep -hE '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-14s\033[0m %s\n", $$1, $$2}'
@@ -64,3 +64,8 @@ trader-paper: ## Run the trader in paper mode (phase 0: stub)
 deps-smoke: ## Install all dependency groups and smoke-test research/trading libraries
 	$(UV) sync --locked --all-groups
 	$(UV) run python scripts/deps_smoke.py
+
+graph: ## Rebuild the graphify code graph in graphify-out/ (offline; needs `uv tool install graphifyy`)
+	@command -v graphify >/dev/null || (echo "graphify not found: uv tool install graphifyy" && exit 1)
+	GRAPHIFY_BACKEND=none graphify extract . --code-only
+	GRAPHIFY_BACKEND=none graphify cluster-only .

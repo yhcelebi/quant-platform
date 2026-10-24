@@ -114,6 +114,7 @@ Defined in the `Makefile` (built in Phase 0):
 | `make doctor`       | `qp doctor`: environment, config, DB, migrations, lake health   |
 | `make deps-smoke`   | install all groups; smoke-test research/trading libraries       |
 | `make help`         | list every target                                               |
+| `make graph`        | rebuild the graphify code graph (`graphify-out/`, gitignored)   |
 | `uv run qp ref import FILE [--dry-run]` | import instruments                              |
 | `uv run qp ledger account add CODE --name ...` | create an account                        |
 | `uv run qp ledger import FILE [--dry-run]` | import canonical ledger CSV                  |
@@ -137,3 +138,6 @@ without a database locally; CI sets `QP_REQUIRE_DB=1` so they must run there.
 - `db/migrations/` — Alembic.
 - `docs/{adr,runbooks}/`.
 - `data/` — gitignored lake and local state.
+- `graphify-out/` — gitignored code knowledge graph (`make graph`; query with
+  `graphify query "..."`). Skill: `.claude/skills/graphify/`. Rebuild after code changes;
+  it may be stale, so confirm in the source before relying on it.
