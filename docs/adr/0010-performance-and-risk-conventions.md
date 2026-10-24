@@ -81,9 +81,12 @@ give different numbers.
 15. **Two VaR sources**: the portfolio's own daily TWR returns × today's value, and a
    position-level historical simulation (today's holdings × each instrument's daily TRY
    returns, price × rate; foreign cash uses rate returns). Lookback 250 valuation days
-   *(default)*; fewer than 60 usable returns *(default)* makes the figure unavailable. A
-   return counts only if both its days have a fresh observation; carried-forward prices
-   would understate risk.
+   *(default)*. Scenario days are the valuation days; on a day with a fresh observation
+   (a price, and for foreign assets a rate, dated that day) an asset's return is its move
+   since its previous fresh observation, on other days zero (no new information, the move
+   lands on the next fresh day). An asset with fewer than 60 fresh returns *(default)* in
+   the lookback is reported and left out: sparse (e.g. monthly) prices would put a month's
+   move into a one-day scenario. Holdings left out are named with their weight.
 16. **Exposure** is measured as weights of the scope value: by currency (instrument currency
    for positions), asset class (instrument master; `unknown` if missing), account and
    instrument, plus the Herfindahl index `Σ w²` for concentration.
