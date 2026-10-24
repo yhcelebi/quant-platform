@@ -607,8 +607,7 @@ def test_replay_steps_match_replay_at_each_date() -> None:
 
 
 def test_replay_steps_honour_as_of_known_at_and_reversals() -> None:
-    first = buy(1, "10", "10")
-    first = Transaction(**{**_fields(first), "id": 1})
+    first = _with_id(buy(1, "10", "10"), 1)
     rev = b.reversal(c(2), 1)
     later = buy(4, "5", "10")
     days = [d for d, _ in replay_steps([first, rev, later], as_of=date(2025, 1, 4))]
@@ -633,8 +632,3 @@ def test_in_transit_is_visible_until_received() -> None:
     )
     assert replay(txs).in_transit() == []
 
-
-def _fields(tx: Transaction) -> dict[str, object]:
-    from dataclasses import fields
-
-    return {f.name: getattr(tx, f.name) for f in fields(tx) if f.init}
