@@ -33,6 +33,7 @@ dependencies = [
     "apscheduler>=3.11,<4",
     "exchange-calendars>=4.13.2",
     "defusedxml>=0.7.1",
+    "anthropic>=2.3.0",
 ]
 
 [dependency-groups]

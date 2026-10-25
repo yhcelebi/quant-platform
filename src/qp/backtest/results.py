@@ -17,6 +17,7 @@ from qp.backtest.walkforward import Metrics, WalkForwardResult
 from qp.data.service import lake_snapshot
 from qp.platform.lake import LakePaths
 from qp.platform.provenance import git_state, package_versions
+from qp.platform.results import list_runs, read_equity, read_summary
 from qp.platform.settings import Settings
 
 
@@ -97,25 +98,4 @@ def store(
     return out
 
 
-def list_runs(settings: Settings) -> list[Path]:
-    root = LakePaths(settings.lake.root).root / "results" / "backtests"
-    if not root.is_dir():
-        return []
-    return sorted(
-        (p for p in root.glob("*/*") if (p / "summary.json").is_file()), key=lambda p: p.name
-    )
-
-
-def read_summary(folder: Path) -> dict[str, Any]:
-    data: dict[str, Any] = json.loads((folder / "summary.json").read_text())
-    note = folder / "SUPERSEDED.txt"
-    data["superseded"] = note.read_text().strip() if note.is_file() else None
-    return data
-
-
-def read_equity(folder: Path) -> list[dict[str, str]]:
-    path = folder / "equity.csv"
-    if not path.is_file():
-        return []
-    with path.open() as fh:
-        return list(csv.DictReader(fh))
+__all__ = ["backtest_id", "list_runs", "read_equity", "read_summary", "store"]
