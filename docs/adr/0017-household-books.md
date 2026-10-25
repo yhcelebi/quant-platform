@@ -36,7 +36,7 @@ phone use).
    amount or debit/credit, decimal comma, header row). Formats are confirmed from a sample
    of each institution before a preset is marked verified. Each imported transaction carries
    `import_id` (hash of source, date, amount, description, balance and order); importing an
-   overlapping statement adds nothing twice. qp only *appends* to `imports/YYYY-MM.beancount`.
+   overlapping statement adds nothing twice. qp writes them to `journal/YYYY-MM.beancount` (qp-managed files).
 4. **Categorization rules** in `data/books/rules.yaml`: first match on description (Turkish
    case-folded) and optional amount range sets the category, payee and tags. Unmatched
    spending goes to `Expenses:Uncategorized` (income to `Income:Uncategorized`) and appears

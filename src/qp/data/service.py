@@ -16,7 +16,9 @@ from qp.data.connectors import evds, fred, sec, tcmb
 from qp.data.connectors.http import HttpClient
 from qp.data.connectors.tcmb import FetchReport
 from qp.data.lake import CleanStore, Dataset, RawStore
-from qp.data.lake_market import plain
+from qp.data.lake_market import LakeMarketData, plain
+from qp.data.manual import ManualMarketData
+from qp.data.market import LayeredMarketData
 from qp.data.quality import CheckResult, QualityStatus, check_tcmb_fx, save_results
 from qp.data.quality.models import DataQualityResultRow
 from qp.platform.db import Database
@@ -310,3 +312,11 @@ def fetch_sec(
         report = sec.fetch_companies(client, raw, clean, codes, now=clock.now)
         _record(run, report, f"{', '.join(codes)}: ")
     return report
+
+
+def market_data(settings: Settings) -> LayeredMarketData:
+    """Owner-maintained manual values first, then the lake (newest date wins; ties: manual)."""
+    lake = LakeMarketData(
+        CleanStore(LakePaths(settings.lake.root)), rate_kind=settings.sources.tcmb.rate_kind
+    )
+    return LayeredMarketData([ManualMarketData.from_dir(settings.manual.dir), lake])

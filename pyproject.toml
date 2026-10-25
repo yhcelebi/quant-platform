@@ -134,7 +134,7 @@ no_implicit_optional = true
 plugins = ["pydantic.mypy"]
 
 [[tool.mypy.overrides]]
-module = ["qp.core", "qp.core.*", "qp.platform", "qp.platform.*", "qp.ledger", "qp.ledger.*", "qp.risk", "qp.risk.*", "qp.stats", "qp.stats.*", "qp.performance", "qp.performance.*", "qp.alerts", "qp.alerts.*", "qp.macro", "qp.macro.*", "qp.news", "qp.news.*"]
+module = ["qp.core", "qp.core.*", "qp.platform", "qp.platform.*", "qp.ledger", "qp.ledger.*", "qp.risk", "qp.risk.*", "qp.stats", "qp.stats.*", "qp.performance", "qp.performance.*", "qp.alerts", "qp.alerts.*", "qp.macro", "qp.macro.*", "qp.news", "qp.news.*", "qp.books", "qp.books.*"]
 strict = true
 
 [[tool.mypy.overrides]]
@@ -144,7 +144,7 @@ module = ["qp.strategies.nautilus", "qp.backtest", "qp.backtest.*", "qp.executio
 disallow_subclassing_any = false
 
 [[tool.mypy.overrides]]
-module = ["apscheduler.*", "streamlit.*", "plotly", "plotly.*", "statsmodels", "statsmodels.*", "nautilus_trader", "nautilus_trader.*", "pyarrow", "pyarrow.*", "exchange_calendars", "exchange_calendars.*", "sklearn", "sklearn.*"]
+module = ["apscheduler.*", "streamlit.*", "plotly", "plotly.*", "statsmodels", "statsmodels.*", "nautilus_trader", "nautilus_trader.*", "pyarrow", "pyarrow.*", "exchange_calendars", "exchange_calendars.*", "sklearn", "sklearn.*", "openpyxl", "openpyxl.*", "xlrd", "xlrd.*"]
 ignore_missing_imports = true
 
 # --------------------------------------------------------------------------- pytest

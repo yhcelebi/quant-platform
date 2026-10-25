@@ -14,10 +14,10 @@ from sqlalchemy import select
 from qp.backtest.data import PriceSeries
 from qp.backtest.reference import simulate
 from qp.core import Currency, InstrumentId, QPError
+from qp.data.service import market_data
 from qp.execution.paper import bars_for
 from qp.platform.db import Database
 from qp.platform.settings import Settings
-from qp.portfolio.service import market_data
 from qp.risk.models import OrderRow, SnapshotRow
 from qp.strategies.costs import from_settings
 from qp.strategies.promotion import deployments

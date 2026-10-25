@@ -5,10 +5,10 @@ from __future__ import annotations
 from datetime import datetime
 
 from qp.core import istanbul_date
+from qp.data.service import market_data
 from qp.execution.paper import CycleReport, run_cycle
 from qp.platform.db import Database
 from qp.platform.settings import Settings
-from qp.portfolio.service import market_data
 from qp.risk import gate
 from qp.strategies.costs import from_settings
 from qp.strategies.promotion import deployments

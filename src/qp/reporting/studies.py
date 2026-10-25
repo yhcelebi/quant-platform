@@ -30,12 +30,11 @@ from qp.core import QPError, ensure_utc, istanbul_date
 from qp.data.lake import CleanStore, Dataset, Row
 from qp.data.market import PreloadedMarketData
 from qp.data.series import SeriesData, SeriesPoint
-from qp.data.service import lake_snapshot
+from qp.data.service import lake_snapshot, market_data
 from qp.performance.service import series_data
 from qp.platform.lake import LakePaths
 from qp.platform.provenance import git_state, package_versions
 from qp.platform.settings import Settings
-from qp.portfolio.service import market_data
 
 STUDIES_DIR = Path("research/studies")
 

@@ -12,6 +12,7 @@ from qp.core import USD, ensure_utc
 from qp.data.lake import CleanStore
 from qp.data.market import MarketHistory, PreloadedMarketData
 from qp.data.series import LakeSeries, LayeredSeries, ManualSeries, SeriesData
+from qp.data.service import market_data
 from qp.ledger.domain import Account, Transaction
 from qp.ledger.repo import LedgerRepository
 from qp.performance.attribution import Attribution, attribute
@@ -33,7 +34,6 @@ from qp.performance.metrics import (
 from qp.platform.db import Database
 from qp.platform.lake import LakePaths
 from qp.platform.settings import Settings
-from qp.portfolio.service import market_data
 
 
 @dataclass

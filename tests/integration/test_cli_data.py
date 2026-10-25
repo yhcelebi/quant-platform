@@ -15,8 +15,8 @@ from apps.cli.main import app
 from qp.core import USD, SystemClock
 from qp.data import service
 from qp.data.connectors.http import HttpClient
+from qp.data.service import market_data
 from qp.platform import Database, load_settings
-from qp.portfolio.service import market_data
 
 pytestmark = pytest.mark.integration
 

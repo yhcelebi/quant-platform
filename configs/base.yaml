@@ -122,3 +122,8 @@ assistant:              # ADR 0016. Off until ANTHROPIC_API_KEY (or QP_ASSISTANT
   effort: medium
   max_rounds: 8
   transcripts: data/assistant/transcripts.jsonl
+
+books:                  # ADR 0017. Household books; personal data, gitignored with data/
+  root: data/books
+  warn_at: "0.8"        # budget alert when 80% is used (and again at 100%)
+  max_rate_gap_days: 7  # a TCMB rate older than this counts as missing

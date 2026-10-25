@@ -13,8 +13,8 @@ from qp.backtest.reference import SimResult
 from qp.backtest.results import store
 from qp.backtest.walkforward import WalkForwardResult, sim_metrics, walk_forward
 from qp.core import Currency, InstrumentId, QPError, istanbul_date
+from qp.data.service import market_data
 from qp.platform.settings import Settings
-from qp.portfolio.service import market_data
 from qp.strategies.costs import COSTLESS, CostModel, from_settings
 
 

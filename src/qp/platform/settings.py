@@ -220,6 +220,14 @@ class AssistantSettings(_Section):
     transcripts: Path = Path("data/assistant/transcripts.jsonl")
 
 
+class BooksSettings(_Section):
+    """Household books (ADR 0017). ``root`` holds personal data: keep it under data/."""
+
+    root: Path = Path("data/books")
+    warn_at: Decimal = Decimal("0.8")  # budget share used that triggers a warning
+    max_rate_gap_days: int = Field(default=7, ge=1)  # older TCMB rate = missing
+
+
 class TelegramSettings(_Section):
     bot_token: SecretStr | None = None
     chat_id: str | None = None
@@ -258,6 +266,7 @@ class Settings(BaseSettings):
     optimization: OptimizationSettings = OptimizationSettings()
     scenarios: ScenarioSettings = ScenarioSettings()
     assistant: AssistantSettings = AssistantSettings()
+    books: BooksSettings = BooksSettings()
     telegram: TelegramSettings = TelegramSettings()
     log: LogSettings = LogSettings()
 
