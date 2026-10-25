@@ -17,8 +17,9 @@ assistant (rule 12: LLM features never compute numbers). `cvxpy` and `riskfolio-
 1. **Returns**: daily TRY returns of each asset (price × TCMB rate; foreign cash: the rate)
    from `qp.risk.var.asset_returns`, on valuation days over a lookback *(default 500)*. Only
    days on which every asset has a fresh return are used; an asset with fewer than
-   `min_observations` fresh returns is left out and listed. TRY cash, if included, has zero
-   return and zero variance.
+   `min_observations` fresh returns is left out and listed. TRY cash is not optimized (zero
+   variance would make minimum variance trivial and risk parity undefined): weights and
+   trades cover the other holdings, plus any candidate assets the owner names.
 2. **Covariance**: Ledoit-Wolf shrinkage *(default; `sample` available)*, annualized ×252.
 3. **Methods** (long-only, fully invested, per-asset cap *(default 1.0)*):
    minimum variance and maximum Sharpe (SLSQP, scipy); risk parity (equal risk contribution,

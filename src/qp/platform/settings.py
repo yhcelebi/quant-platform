@@ -191,6 +191,35 @@ class BacktestSettings(_Section):
     lag_bars: int = Field(default=1, ge=1)
 
 
+class OptimizationSettings(_Section):
+    """Weight models (ADR 0016, 1-5)."""
+
+    lookback_days: int = Field(default=500, ge=60)
+    min_observations: int = Field(default=60, ge=20)
+    cap: float = Field(default=1.0, gt=0, le=1)  # per-asset maximum weight
+    estimator: Literal["ledoit_wolf", "sample"] = "ledoit_wolf"
+    risk_free: Decimal = Decimal(0)  # annual, TRY; max-Sharpe only
+    cvar_level: float = Field(default=0.95, ge=0.5, lt=1)
+
+
+class ScenarioSettings(_Section):
+    """Stress scenarios (ADR 0016, 6-9); definitions in ``file``."""
+
+    file: Path = Path("configs/scenarios.yaml")
+    worst_windows: tuple[int, ...] = (1, 5, 20)
+
+
+class AssistantSettings(_Section):
+    """Read-only assistant (ADR 0016, 10-13). Off unless an API key is set here
+    (QP_ASSISTANT__API_KEY) or as ANTHROPIC_API_KEY."""
+
+    api_key: SecretStr | None = None
+    model: str = "claude-opus-5-5"
+    effort: Literal["low", "medium", "high", "xhigh", "max"] = "medium"
+    max_rounds: int = Field(default=8, ge=1, le=20)
+    transcripts: Path = Path("data/assistant/transcripts.jsonl")
+
+
 class TelegramSettings(_Section):
     bot_token: SecretStr | None = None
     chat_id: str | None = None
@@ -226,6 +255,9 @@ class Settings(BaseSettings):
     risk: RiskSettings = RiskSettings()
     alerts: AlertSettings = AlertSettings()
     backtest: BacktestSettings = BacktestSettings()
+    optimization: OptimizationSettings = OptimizationSettings()
+    scenarios: ScenarioSettings = ScenarioSettings()
+    assistant: AssistantSettings = AssistantSettings()
     telegram: TelegramSettings = TelegramSettings()
     log: LogSettings = LogSettings()
 

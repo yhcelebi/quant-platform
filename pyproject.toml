@@ -140,7 +140,7 @@ module = ["qp.strategies.nautilus", "qp.backtest", "qp.backtest.*", "qp.executio
 disallow_subclassing_any = false
 
 [[tool.mypy.overrides]]
-module = ["apscheduler.*", "streamlit.*", "plotly", "plotly.*", "statsmodels", "statsmodels.*", "nautilus_trader", "nautilus_trader.*", "pyarrow", "pyarrow.*", "exchange_calendars", "exchange_calendars.*"]
+module = ["apscheduler.*", "streamlit.*", "plotly", "plotly.*", "statsmodels", "statsmodels.*", "nautilus_trader", "nautilus_trader.*", "pyarrow", "pyarrow.*", "exchange_calendars", "exchange_calendars.*", "sklearn", "sklearn.*"]
 ignore_missing_imports = true
 
 # --------------------------------------------------------------------------- pytest

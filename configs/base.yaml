@@ -104,3 +104,21 @@ backtest:               # ADR 0014. PLACEHOLDER rates: replace with your broker'
       - {valid_from: 2000-01-01, commission: "0", min_commission: "0", bsmv: "0", half_spread: "0.0002", slippage: "0.0003"}
     fx_try:
       - {valid_from: 2000-01-01, commission: "0", min_commission: "0", bsmv: "0", half_spread: "0.0010", slippage: "0.0005"}
+
+optimization:           # ADR 0016. Model outputs only: nothing is sent to the trading gate.
+  lookback_days: 500    # valuation days of daily TRY returns
+  min_observations: 60
+  cap: 1.0              # per-asset maximum weight (min variance, max Sharpe, min CVaR)
+  estimator: ledoit_wolf  # or sample
+  risk_free: "0"        # annual TRY rate for max Sharpe; e.g. a deposit rate you state
+  cvar_level: 0.95
+
+scenarios:              # ADR 0016; edit configs/scenarios.yaml to change the shocks
+  file: configs/scenarios.yaml
+  worst_windows: [1, 5, 20]
+
+assistant:              # ADR 0016. Off until ANTHROPIC_API_KEY (or QP_ASSISTANT__API_KEY) is set.
+  model: claude-opus-5-5  # questions and tool results (portfolio values) go to Anthropic's API
+  effort: medium
+  max_rounds: 8
+  transcripts: data/assistant/transcripts.jsonl
