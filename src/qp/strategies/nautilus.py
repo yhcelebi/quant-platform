@@ -55,6 +55,24 @@ class QPStrategyConfig(StrategyConfig, frozen=True):
     params_json: str = "{}"
     lag_bars: int = 1
     cost_rate: str = "0"  # proportional cost, grossed into the sizing price
+    band: str = "0.01"  # no-trade band as a fraction of equity
+
+
+def order_delta(
+    target: float,
+    equity: Decimal,
+    price: Decimal,
+    held: Decimal,
+    cost_rate: Decimal,
+    band: Decimal,
+) -> Decimal:
+    """Units to trade toward the target; trades worth less than ``band`` x equity are
+    skipped (no daily churn from price drift), except a move to flat (ADR 0014, 4)."""
+    want = target_quantity(target, equity, price, cost_rate)
+    delta = want - held
+    if delta != 0 and want != 0 and abs(delta) * price < band * equity:
+        return Decimal(0)
+    return delta
 
 
 def target_quantity(target: float, equity: Decimal, price: Decimal, cost_rate: Decimal) -> Decimal:
@@ -74,6 +92,7 @@ class QPStrategy(Strategy):
         self.params = json.loads(config.params_json)
         self.lag = config.lag_bars
         self.cost_rate = Decimal(config.cost_rate)
+        self.band = Decimal(config.band)
         self.closes: list[float] = []
         self.pending: list[float] = []  # targets waiting for their execution bar
         self.targets: list[float] = []
@@ -99,8 +118,7 @@ class QPStrategy(Strategy):
         cash = Decimal(str(account.balance_total(instrument.quote_currency).as_decimal()))
         held = Decimal(str(self.portfolio.net_position(self.instrument_id)))
         equity = cash + held * price
-        want = target_quantity(target, equity, price, self.cost_rate)
-        delta = want - held
+        delta = order_delta(target, equity, price, held, self.cost_rate, self.band)
         if delta == 0:
             return
         side = OrderSide.BUY if delta > 0 else OrderSide.SELL

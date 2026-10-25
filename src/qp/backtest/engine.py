@@ -80,6 +80,7 @@ def run_nautilus(
     capital: Decimal,
     costs: CostModel,
     lag: int = 1,
+    band: Decimal = Decimal("0.01"),
 ) -> SimResult:
     if len(series.days) < 2:
         raise QPValidationError("a backtest needs at least two bars")
@@ -111,6 +112,7 @@ def run_nautilus(
                 params_json=json.dumps(params),
                 lag_bars=lag,
                 cost_rate=str(cost_buffer(costs)),
+                band=str(band),
             )
         )
         engine.add_strategy(strategy)

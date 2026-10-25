@@ -12,6 +12,7 @@ from rich.table import Table
 import qp
 from apps.cli import (
     alerts_cmd,
+    backtest_cmd,
     data_cmd,
     journal_cmd,
     ledger_cmd,
@@ -41,6 +42,7 @@ app.add_typer(news_cmd.app, name="news")
 app.add_typer(research_cmd.app, name="research")
 app.add_typer(journal_cmd.app, name="journal")
 app.add_typer(value_cmd.app, name="value")
+app.add_typer(backtest_cmd.app, name="backtest")
 console = Console()
 
 _STYLE = {Status.OK: "green", Status.WARN: "yellow", Status.FAIL: "red"}

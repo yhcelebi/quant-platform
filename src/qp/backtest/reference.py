@@ -12,7 +12,7 @@ from typing import Any
 from qp.backtest.data import PriceSeries
 from qp.core import QPValidationError
 from qp.strategies.costs import CostModel
-from qp.strategies.nautilus import target_quantity
+from qp.strategies.nautilus import order_delta
 from qp.strategies.signals import get
 
 ZERO = Decimal(0)
@@ -60,6 +60,7 @@ def simulate(
     capital: Decimal,
     costs: CostModel,
     lag: int = 1,
+    band: Decimal = Decimal("0.01"),
 ) -> SimResult:
     fn = get(signal).fn
     buffer = cost_buffer(costs)
@@ -72,12 +73,11 @@ def simulate(
             target = pending.pop(0)
             if not 0 <= target <= 1:
                 raise QPValidationError(f"target {target} on {day}: cash accounts are long-only")
-            want = target_quantity(target, cash + qty * price, price, buffer)
-            delta = want - qty
+            delta = order_delta(target, cash + qty * price, price, qty, buffer, band)
             if delta != 0:
                 fee = costs.fee(delta * price, day)
                 cash -= delta * price + fee
-                qty = want
+                qty += delta
                 out.fills.append(Fill(day, delta, price, fee))
         closes.append(float(price))
         t = fn(closes, **params)[-1]

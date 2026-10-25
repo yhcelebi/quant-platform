@@ -93,3 +93,48 @@ def test_short_targets_are_refused() -> None:
             capital=Decimal(100000),
             costs=COSTS,
         )
+
+
+def test_walk_forward_windows_and_overfitting_stats() -> None:
+    from qp.backtest.walkforward import walk_forward
+
+    s = series(n=400, seed=5)
+    wf = walk_forward(s, signal="sma_cross", capital=Decimal(100000), costs=COSTS)
+    # windows start at bars 0 and 63 (0 + 315 <= 400, 63 + 315 <= 400, 126 + 315 > 400)
+    assert len(wf.windows) == 2
+    assert len(wf.oos_returns) == 2 * 63
+    assert wf.oos_days[0] == s.days[252]
+    assert len(wf.grid) == 6  # fast {5, 10, 20} x slow {50, 100}
+    assert wf.metrics is not None
+    assert wf.metrics.exposure > 0  # counted over the test days
+    assert wf.pbo is not None
+    assert 0 <= wf.pbo <= 1
+    if wf.dsr is not None and wf.psr is not None:
+        assert wf.dsr <= wf.psr  # deflating for 6 trials can only lower confidence
+
+
+def test_metrics_compound_returns_by_hand() -> None:
+    """+10%, -10%, +10%: wealth 1.1, 0.99, 1.089; total 8.9%; drawdown 0.99/1.1 - 1 = -10%."""
+    from qp.backtest.walkforward import metrics_of
+
+    m = metrics_of([0.1, -0.1, 0.1], first=date(2025, 1, 1), last=date(2025, 1, 4))
+    assert m.total_return == pytest.approx(0.089)
+    assert m.max_drawdown == pytest.approx(-0.1)
+    assert m.cagr is None  # under a year: not annualized
+
+
+def test_no_trade_band_skips_drift_but_not_exits() -> None:
+    from qp.strategies.nautilus import order_delta
+
+    # want 1000 units at 10 with equity 10000: holding 995 -> 5 units = 50 < 1% of 10000
+    assert (
+        order_delta(1.0, Decimal(10000), Decimal(10), Decimal(995), Decimal(0), Decimal("0.01"))
+        == 0
+    )
+    assert (
+        order_delta(1.0, Decimal(10000), Decimal(10), Decimal(900), Decimal(0), Decimal("0.01"))
+        == 100
+    )
+    assert (
+        order_delta(0.0, Decimal(10000), Decimal(10), Decimal(5), Decimal(0), Decimal("0.01")) == -5
+    )

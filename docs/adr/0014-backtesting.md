@@ -26,7 +26,8 @@ called per fill with `(order, fill_qty, fill_px, instrument)`.
    allowed.
 4. **Sizing**: quantity = the target fraction of equity (cash + position at the current
    close) divided by the price grossed up by the cost rate, truncated toward zero to the
-   lot size. Cash account; equity compounds.
+   lot size. Cash account; equity compounds. A trade worth less than 1% of equity *(default
+   no-trade band)* is skipped unless it goes flat, so price drift does not cause daily churn.
 5. **Costs are mandatory** (DOMAIN): a backtest needs a cost profile; `--costless` runs are
    labelled invalid in results. Cost per fill = `max(notional × commission, minimum)` ×
    (1 + BSMV) + notional × (half spread + slippage), in Decimal, rounded half-even to the
