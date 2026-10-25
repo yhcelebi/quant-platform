@@ -132,6 +132,7 @@ Defined in the `Makefile` (built in Phase 0):
 | `uv run qp research list / run ID / show ID` | studies with provenance |
 | `uv run qp journal add / list / show / review / note / watch` | decisions journal |
 | `uv run qp value fundamentals / multiples / dcf` | SEC fundamentals, valuation |
+| `uv run qp backtest run / walkforward / list` | NautilusTrader backtests |
 
 Local PostgreSQL 16 runs in Docker on `127.0.0.1:5433` (ADR 0002). Integration tests skip
 without a database locally; CI sets `QP_REQUIRE_DB=1` so they must run there.

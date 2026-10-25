@@ -108,6 +108,8 @@ def list_runs(settings: Settings) -> list[Path]:
 
 def read_summary(folder: Path) -> dict[str, Any]:
     data: dict[str, Any] = json.loads((folder / "summary.json").read_text())
+    note = folder / "SUPERSEDED.txt"
+    data["superseded"] = note.read_text().strip() if note.is_file() else None
     return data
 
 

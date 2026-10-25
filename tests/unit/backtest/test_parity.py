@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -138,3 +139,37 @@ def test_no_trade_band_skips_drift_but_not_exits() -> None:
     assert (
         order_delta(0.0, Decimal(10000), Decimal(10), Decimal(5), Decimal(0), Decimal("0.01")) == -5
     )
+
+
+def test_results_store_and_backtests_page(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from streamlit.testing.v1 import AppTest
+
+    from qp.backtest.results import list_runs, read_summary, store
+    from qp.backtest.walkforward import sim_metrics
+    from qp.platform import load_settings
+
+    repo = Path(__file__).resolve().parents[3]
+    monkeypatch.setenv("QP_LAKE__ROOT", str(tmp_path / "lake"))
+    settings = load_settings(config_dir=repo / "configs", env_file=None)
+    s = series()
+    sim = run_nautilus(
+        s, signal="sma_cross", params={"fast": 5, "slow": 20}, capital=Decimal(100000), costs=COSTS
+    )
+    spec = {
+        "signal": "sma_cross",
+        "params": {},
+        "instrument": "TEST.BIST",
+        "source": "synthetic",
+        "costs": "costless",
+        "lag_bars": 1,
+    }
+    folder = store(
+        settings, kind="backtest", spec=spec, metrics=sim_metrics(sim), sim=sim, repo=repo
+    )
+    summary = read_summary(folder)
+    assert summary["valid"] is False  # costless runs are labelled invalid
+    assert list_runs(settings) == [folder]
+    at = AppTest.from_file(str(repo / "apps" / "terminal" / "app.py"), default_timeout=30).run()
+    at.switch_page("pages/backtests.py").run()
+    assert not at.exception
+    assert any("no cost model" in e.value for e in at.error)

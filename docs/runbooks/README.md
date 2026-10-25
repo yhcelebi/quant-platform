@@ -1,6 +1,6 @@
 # Runbooks
 
-Operational procedures: `ledger-import.md`, `data.md`, `performance-and-risk.md`, `macro-and-news.md`, `research.md`. Phase 7 adds: starting/stopping the trader, kill switch (halt vs
+Operational procedures: `ledger-import.md`, `data.md`, `performance-and-risk.md`, `macro-and-news.md`, `research.md`, `backtesting.md`. Phase 7 adds: starting/stopping the trader, kill switch (halt vs
 flatten), heartbeat alerts, reconciliation mismatches. Phase 8 adds: VPS deploy, backups
 and restore test.
 

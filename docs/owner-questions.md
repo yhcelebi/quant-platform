@@ -136,3 +136,14 @@ Recommended defaults are in effect (ADR 0010); change any by answering.
     changes (fit at a parameter boundary, flagged unreliable); returns are stationary with
     about 3% annualized volatility and ~19% annualized drift over 2025-01..2026-10. Worth a
     different model (e.g. regime or jump) if you care about TRY volatility.
+
+## Phase 6 — backtesting (built 2026-10-25, recommended defaults)
+
+27. **Cost schedule**: `backtest.costs` in `configs/base.yaml` holds placeholder rates
+    (BIST: 0.15% commission + 5% BSMV on it + 0.05% half spread + 0.05% slippage). Please
+    replace with your broker's actual commission schedule (with dates if it changed).
+28. **Dependencies**: NautilusTrader is now installed by default (`trading` group is a
+    default uv group, ~156 MB) so CI checks the backtest code. ok?
+29. **First real results** (TCMB USD/TRY, 2025-01..2026-10): SMA(10/50) +34.9% vs buy and
+    hold +39.7%; walk-forward PBO 54% (parameter choice adds nothing out of sample). TCMB
+    indicative rates are not tradable prices; treat these as plumbing checks, not evidence.
