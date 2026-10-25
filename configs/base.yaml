@@ -127,3 +127,7 @@ books:                  # ADR 0017. Household books; personal data, gitignored w
   root: data/books
   warn_at: "0.8"        # budget alert when 80% is used (and again at 100%)
   max_rate_gap_days: 7  # a TCMB rate older than this counts as missing
+
+api:                    # the web app's API (ADR 0017); `make app`
+  host: 127.0.0.1       # set your Tailscale IP to use it from your phone (token required)
+  port: 8765

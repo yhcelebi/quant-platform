@@ -228,6 +228,15 @@ class BooksSettings(_Section):
     max_rate_gap_days: int = Field(default=7, ge=1)  # older TCMB rate = missing
 
 
+class ApiSettings(_Section):
+    """The web app's JSON API (ADR 0017, 8). Localhost unless you choose a private address
+    (e.g. your Tailscale IP); a token (QP_API__TOKEN) is then required on every request."""
+
+    host: str = "127.0.0.1"
+    port: int = Field(default=8765, ge=1, le=65535)
+    token: SecretStr | None = None
+
+
 class TelegramSettings(_Section):
     bot_token: SecretStr | None = None
     chat_id: str | None = None
@@ -267,6 +276,7 @@ class Settings(BaseSettings):
     scenarios: ScenarioSettings = ScenarioSettings()
     assistant: AssistantSettings = AssistantSettings()
     books: BooksSettings = BooksSettings()
+    api: ApiSettings = ApiSettings()
     telegram: TelegramSettings = TelegramSettings()
     log: LogSettings = LogSettings()
 

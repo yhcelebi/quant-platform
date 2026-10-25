@@ -1,4 +1,4 @@
-# src/qp: never streamlit, typer or vectorbt. nautilus_trader is allowed at this level;
+# src/qp: never streamlit, typer, vectorbt, fastapi or uvicorn. nautilus_trader is allowed at this level;
 # import-linter (contract nautilus-boundary) restricts it to strategies/backtest/execution.
 extend = "../pyproject.toml"
 
@@ -6,3 +6,5 @@ extend = "../pyproject.toml"
 "vectorbt".msg = "Only research/ may import vectorbt."
 "streamlit".msg = "Only apps/ may import streamlit."
 "typer".msg = "Only apps/ may import typer."
+"fastapi".msg = "Only apps/ may import fastapi."
+"uvicorn".msg = "Only apps/ may import uvicorn."

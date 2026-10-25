@@ -104,7 +104,7 @@ forbidden_modules =
 #    vectorbt: research/ only. streamlit, typer: apps/ only.
 # ---------------------------------------------------------------------------
 [importlinter:contract:no-app-or-research-libs-in-qp]
-name = qp never imports vectorbt, streamlit or typer
+name = qp never imports vectorbt, streamlit, typer or the web API stack
 type = forbidden
 source_modules =
     qp
@@ -112,6 +112,8 @@ forbidden_modules =
     vectorbt
     streamlit
     typer
+    fastapi
+    uvicorn
 
 # ---------------------------------------------------------------------------
 # 5. Pure foundation layers do no I/O.

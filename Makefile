@@ -4,7 +4,8 @@ SHELL := /bin/bash
 UV ?= uv
 
 .PHONY: help setup lock lint format typecheck imports test test-cov check \
-        db-up db-down migrate doctor terminal workers trader-paper deps-smoke graph
+        db-up db-down migrate doctor terminal workers trader-paper deps-smoke graph \
+        app web-install web-build web-dev
 
 help: ## Show this help
 	@grep -hE '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-14s\033[0m %s\n", $$1, $$2}'
@@ -54,6 +55,18 @@ doctor: ## Environment, config, DB, migrations and lake health check
 
 terminal: ## Run the Streamlit terminal
 	$(UV) run streamlit run apps/terminal/app.py
+
+app: ## Household books web app + API on http://127.0.0.1:8765 (build the web app first)
+	$(UV) run python -m apps.api.main
+
+web-install: ## Install the web app's packages (apps/web, pnpm)
+	cd apps/web && pnpm install
+
+web-build: ## Build the web app into apps/web/out (served by `make app`)
+	cd apps/web && pnpm build
+
+web-dev: ## Web app with hot reload on :3000 (API: run `make app` alongside)
+	cd apps/web && pnpm dev
 
 workers: ## Run the APScheduler workers process
 	$(UV) run python -m apps.workers.main

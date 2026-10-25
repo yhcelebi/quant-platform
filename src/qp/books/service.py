@@ -9,9 +9,9 @@ from pathlib import Path
 
 from beancount.core import data
 
-from qp.books.config import load_rules, load_sources
+from qp.books.config import fold, load_rules, load_sources
 from qp.books.importer import ImportPlan, needs_review, plan_import, recategorize
-from qp.books.ledger import Books, BooksError, load, write
+from qp.books.ledger import Books, BooksError, commit, load, write
 from qp.books.reader import statement_rows
 from qp.books.statements import Rates
 from qp.core import Currency
@@ -96,3 +96,62 @@ def set_category(
     new = recategorize(t, books, account, payee=payee)
     write(books, replace={t.meta["import_id"]: new}, message=f"categorize {import_id} as {account}")
     return new
+
+
+def categories(books: Books) -> list[str]:
+    """Open Expenses and Income accounts (the category list for forms)."""
+    return sorted(a for a in books.accounts() if a.startswith(("Expenses:", "Income:")))
+
+
+def money_accounts(books: Books) -> list[str]:
+    """Accounts money is paid from or into: banks, wallets, cash and liabilities."""
+    return sorted(
+        a
+        for a in books.accounts()
+        if a.startswith(("Assets:Bank:", "Assets:Wallet:", "Assets:Cash:", "Liabilities:"))
+    )
+
+
+def transactions_between(
+    books: Books, start: date, end: date, *, text: str = "", account: str = ""
+) -> list[data.Transaction]:
+    """Newest first; ``text`` searches payee and description (folded), ``account`` any
+    posting account by prefix."""
+    want = fold(text)
+    out = []
+    for t in books.transactions():
+        if not start <= t.date <= end:
+            continue
+        if want and want not in fold(f"{t.payee or ''} {t.narration or ''}"):
+            continue
+        if account and not any(p.account.startswith(account) for p in t.postings):
+            continue
+        out.append(t)
+    return sorted(out, key=lambda t: (t.date, str(t.meta.get("lineno", 0))), reverse=True)
+
+
+PERIOD_NAMES = ("daily", "weekly", "monthly", "quarterly", "yearly")
+
+
+def set_budget(
+    settings: Settings, account: str, period: str, amount: Decimal, *, start: date
+) -> None:
+    """Append a budget entry (it replaces the account's earlier budget from ``start``)."""
+    if period not in PERIOD_NAMES:
+        raise BooksError(f"period must be one of {', '.join(PERIOD_NAMES)}")
+    if amount < 0:
+        raise BooksError("a budget cannot be negative")
+    books = load(root(settings))
+    if account not in books.accounts() and not any(
+        a.startswith(account + ":") for a in books.accounts()
+    ):
+        raise BooksError(f"{account} is not an account or a group of accounts")
+    path = books.root / "budgets.beancount"
+    before = path.read_text(encoding="utf-8")
+    line = f'{start} custom "budget" {account} "{period}" {amount:.2f} TRY\n'
+    path.write_text(before.rstrip("\n") + "\n" + line, encoding="utf-8")
+    reloaded = load(books.root)
+    if len(reloaded.errors) > len(books.errors):
+        path.write_text(before, encoding="utf-8")
+        raise BooksError("; ".join(reloaded.errors[-3:]))
+    commit(books.root, f"budget {account} {period} {amount}")

@@ -37,6 +37,9 @@ dependencies = [
     "beancount>=3.2",
     "openpyxl>=3.1",
     "xlrd>=2.0",
+    "fastapi>=0.162",
+    "uvicorn>=0.54",
+    "python-multipart>=0.0.32",
 ]
 
 [dependency-groups]
@@ -118,6 +121,8 @@ ban-relative-imports = "all"
 "vectorbt".msg = "Only research/ may import vectorbt."
 "streamlit".msg = "Only apps/ may import streamlit."
 "typer".msg = "Only apps/ may import typer."
+"fastapi".msg = "Only apps/ may import fastapi."
+"uvicorn".msg = "Only apps/ may import uvicorn."
 
 # --------------------------------------------------------------------------- mypy
 [tool.mypy]

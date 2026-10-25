@@ -836,6 +836,23 @@ wheels = [
 ]
 
 [[package]]
+name = "fastapi"
+version = "0.162.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "annotated-doc" },
+    { name = "opentelemetry-api" },
+    { name = "pydantic" },
+    { name = "starlette" },
+    { name = "typing-extensions" },
+    { name = "typing-inspection" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/e9/eb/2cf8c80abf09b2800aef0a83b41066fbfda8ee5495b7a08b9d1af40f7046/fastapi-0.162.0.tar.gz", hash = "sha256:6a22c1e2e6e32e0633ee7e170f00009a29b8228b16feb219ee42f32fd8d88a8f", size = 527867, upload-time = "2026-10-23T18:47:33.264Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b4/4f/3f2c25c9b43970b5e9a08beb5e04776247edea684ddc0930f4f02f0bb6cb/fastapi-0.162.0-py3-none-any.whl", hash = "sha256:3785963de305dd09912426cb81f2d230fce98ab3521cdfe97265c8d14983128c", size = 148912, upload-time = "2026-10-23T18:47:31.734Z" },
+]
+
+[[package]]
 name = "fastjsonschema"
 version = "2.22.2"
 source = { registry = "https://pypi.org/simple" }
@@ -2714,6 +2731,7 @@ dependencies = [
     { name = "defusedxml" },
     { name = "duckdb" },
     { name = "exchange-calendars" },
+    { name = "fastapi" },
     { name = "httpx" },
     { name = "numpy" },
     { name = "openpyxl" },
@@ -2724,6 +2742,7 @@ dependencies = [
     { name = "pydantic" },
     { name = "pydantic-settings" },
     { name = "python-dotenv" },
+    { name = "python-multipart" },
     { name = "pyyaml" },
     { name = "scikit-learn" },
     { name = "scipy" },
@@ -2733,6 +2752,7 @@ dependencies = [
     { name = "structlog" },
     { name = "typer" },
     { name = "tzdata" },
+    { name = "uvicorn" },
     { name = "xlrd" },
 ]
 
@@ -2771,6 +2791,7 @@ requires-dist = [
     { name = "defusedxml", specifier = ">=0.7.1" },
     { name = "duckdb", specifier = ">=1.5" },
     { name = "exchange-calendars", specifier = ">=4.13.2" },
+    { name = "fastapi", specifier = ">=0.162" },
     { name = "httpx", specifier = ">=0.28" },
     { name = "numpy", specifier = ">=2.5" },
     { name = "openpyxl", specifier = ">=3.1" },
@@ -2781,6 +2802,7 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2.14" },
     { name = "pydantic-settings", specifier = ">=2.16" },
     { name = "python-dotenv", specifier = ">=1.1" },
+    { name = "python-multipart", specifier = ">=0.0.32" },
     { name = "pyyaml", specifier = ">=6.0" },
     { name = "scikit-learn", specifier = ">=1.9" },
     { name = "scipy", specifier = ">=1.18" },
@@ -2790,6 +2812,7 @@ requires-dist = [
     { name = "structlog", specifier = ">=26.1" },
     { name = "typer", specifier = ">=0.27" },
     { name = "tzdata", specifier = ">=2026.1" },
+    { name = "uvicorn", specifier = ">=0.54" },
     { name = "xlrd", specifier = ">=2.0" },
 ]
 
