@@ -147,3 +147,13 @@ Recommended defaults are in effect (ADR 0010); change any by answering.
 29. **First real results** (TCMB USD/TRY, 2025-01..2026-10): SMA(10/50) +34.9% vs buy and
     hold +39.7%; walk-forward PBO 54% (parameter choice adds nothing out of sample). TCMB
     indicative rates are not tradable prices; treat these as plumbing checks, not evidence.
+
+## Phase 7 — paper trading (built 2026-10-25, recommended defaults)
+
+30. **Paper broker instead of a Nautilus TradingNode** for daily strategies (ADR 0015): no
+    Nautilus adapter exists for TCMB/BIST daily data. Same signal, sizing and costs as the
+    backtest. ok? A TradingNode comes with a live broker adapter (phase 8).
+31. **Gate limits** (defaults): stale data 5 days, order notional 105% of equity, daily loss
+    5% halts. Change in code review if you want different ones.
+32. **Starting the 4-week clock**: needs `make workers` running on weekdays (or a VPS,
+    phase 8). Which strategy do you want on paper first? I deployed none in your database.

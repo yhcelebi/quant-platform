@@ -8,7 +8,7 @@ No microservices. No C++ unless profiling proves a need. See ADR 0001.
 | Process          | Role                                                                                       |
 |------------------|--------------------------------------------------------------------------------------------|
 | `apps/workers`   | APScheduler jobs: ingestion, quality checks, derived data, daily portfolio snapshots, alert evaluation |
-| `apps/trader`    | NautilusTrader `TradingNode`, the qp risk gate, the fill → ledger bridge, heartbeat, reconciliation |
+| `apps/trader`    | Paper: the daily paper broker (ADR 0015), qp risk gate, kill switch, fill → ledger bridge (in memory), heartbeat, reconciliation. Live (phase 8): NautilusTrader `TradingNode` |
 | `apps/terminal`  | Streamlit multipage UI. Read-mostly; its only writes are journal entries and the kill switch |
 | `apps/cli`       | Typer CLI (`qp ...`) for imports, backfills, backtests, reports and admin                  |
 | `research/`      | Notebooks that call `qp` functions. They write only to `data/lake/results/`                |
