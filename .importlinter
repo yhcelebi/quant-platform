@@ -31,7 +31,7 @@ layers =
     risk
     performance | factors | valuation
     portfolio
-    ledger | macro | news | fundamentals
+    ledger | macro | news | fundamentals | books
     data
     reference
     platform
@@ -68,6 +68,7 @@ source_modules =
     qp.macro
     qp.news
     qp.fundamentals
+    qp.books
     qp.data
     qp.reference
     qp.platform

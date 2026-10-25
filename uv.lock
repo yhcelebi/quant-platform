@@ -373,6 +373,25 @@ wheels = [
 ]
 
 [[package]]
+name = "beancount"
+version = "3.2.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "click" },
+    { name = "python-dateutil" },
+    { name = "regex" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/eb/21/ed48e671a5e474c620762a7ea9c6b7f402f847d74dd2b73ceb5d2dec79a3/beancount-3.2.3.tar.gz", hash = "sha256:f52c4d237bcb092cbf02a29373d3e59d95349c2828a91491818ae437ee220f74", size = 590847, upload-time = "2026-05-05T23:09:30.329Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/5b/84/4d189150d6118a14731a87065daca7ad3556d84a43f1dab89ccaf9304e7b/beancount-3.2.3-cp312-cp312-macosx_10_13_x86_64.whl", hash = "sha256:03abcc7a7ef459128bb80227830826802014de0a8a923013fe470f02aa5c07ce", size = 431495, upload-time = "2026-05-05T23:08:44.594Z" },
+    { url = "https://files.pythonhosted.org/packages/22/ee/9693c7fe00913d691c40759c6b62152e630af495df0c3accf20413aaea1c/beancount-3.2.3-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:6b6490ac316e8f32b7f35c6088536140265ef43c5fd7555d7cb346d2b47e2862", size = 431680, upload-time = "2026-05-05T23:08:45.896Z" },
+    { url = "https://files.pythonhosted.org/packages/0d/53/a2aba8c2903f4e5d4d4de26a8dff464a83aecd5f711e8ce535b2b28114ad/beancount-3.2.3-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:89e66a583b8d6d5e5e23246eb0b0d2049fff9bcbaa40cc2569ac88e90bc8c95c", size = 437750, upload-time = "2026-05-05T23:08:47.65Z" },
+    { url = "https://files.pythonhosted.org/packages/93/71/36321cd52fbfbc76cbce79fb92e82c3d853a6abcf4e3cf1a384afb394393/beancount-3.2.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:60a8febabd2e128c51ca1f8cdb4f86b02fd83fa20cfe9ecd74be5b1a32c3d40b", size = 439712, upload-time = "2026-05-05T23:08:49.582Z" },
+    { url = "https://files.pythonhosted.org/packages/e8/bc/7a6bfdd352e3a5891ebc048071979d79ae34f6191a3d2fd7a2a7ef7ba06c/beancount-3.2.3-cp312-cp312-win32.whl", hash = "sha256:c4b7d357c1d77948f3ec2bdab0bdf35f5be4401f0dc2fb6cf09095410ebd6db3", size = 432031, upload-time = "2026-05-05T23:08:51.03Z" },
+    { url = "https://files.pythonhosted.org/packages/91/f6/cd046dc82e99ca5c2821c17ed438144efff4e597d6711467529a991d50dc/beancount-3.2.3-cp312-cp312-win_amd64.whl", hash = "sha256:91aab58194d6f2ee38625db89d52a551196e1f03f8ce1198bf8775338face60e", size = 450586, upload-time = "2026-05-05T23:08:52.677Z" },
+]
+
+[[package]]
 name = "beautifulsoup4"
 version = "4.15.0"
 source = { registry = "https://pypi.org/simple" }
@@ -779,6 +798,15 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/4c/99/be75c788a492f8d77b7a1cdc1b19939ae7be0007f2028691ad371a1a33ee/duckdb-1.5.6-cp312-cp312-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:bc9619ed7d4ffa117b5155d84b44794366bb6635178d78ed5e13a6024845c757", size = 21568087, upload-time = "2026-09-28T13:37:58.191Z" },
     { url = "https://files.pythonhosted.org/packages/b5/95/889f8508960e47c0a7c75cc5bf57cde8512fc24f8db7b3129cca5388da42/duckdb-1.5.6-cp312-cp312-win_amd64.whl", hash = "sha256:09ff51b230219f0d8b47fc8a1e17fb595ba9fab0c3d96a6de4d00b8ff86b3cf1", size = 13190189, upload-time = "2026-09-28T13:38:00.407Z" },
     { url = "https://files.pythonhosted.org/packages/a4/c9/baab503364a68309f8368c88e77f5341e7d94927bdf3e6d703f0e5035f3e/duckdb-1.5.6-cp312-cp312-win_arm64.whl", hash = "sha256:b8d795c8b2d5634b3269f974aa97f1fdf878f62f032317a52252a151b693fb1e", size = 14021977, upload-time = "2026-09-28T13:38:02.682Z" },
+]
+
+[[package]]
+name = "et-xmlfile"
+version = "2.0.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/d3/38/af70d7ab1ae9d4da450eeec1fa3918940a5fafb9055e934af8d6eb0c2313/et_xmlfile-2.0.0.tar.gz", hash = "sha256:dab3f4764309081ce75662649be815c4c9081e88f0837825f90fd28317d4da54", size = 17234, upload-time = "2024-10-25T17:25:40.039Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c1/8b/5fe2cc11fee489817272089c4203e679c63b570a5aaeb18d852ae3cbba6a/et_xmlfile-2.0.0-py3-none-any.whl", hash = "sha256:7a91720bc756843502c3b7504c77b8fe44217c85c537d85037f0f536151b2caa", size = 18059, upload-time = "2024-10-25T17:25:39.051Z" },
 ]
 
 [[package]]
@@ -1968,6 +1996,18 @@ wheels = [
 ]
 
 [[package]]
+name = "openpyxl"
+version = "3.1.5"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "et-xmlfile" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/3d/f9/88d94a75de065ea32619465d2f77b29a0469500e99012523b91cc4141cd1/openpyxl-3.1.5.tar.gz", hash = "sha256:cf0e3cf56142039133628b5acffe8ef0c12bc902d2aadd3e0fe5878dc08d1050", size = 186464, upload-time = "2024-06-28T14:03:44.161Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c0/da/977ded879c29cbd04de313843e76868e6e13408a94ed6b987245dc7c8506/openpyxl-3.1.5-py2.py3-none-any.whl", hash = "sha256:5282c12b107bffeef825f4617dc029afaf41d0ea60823bbb665ef3079dc79de2", size = 250910, upload-time = "2024-06-28T14:03:41.161Z" },
+]
+
+[[package]]
 name = "opentelemetry-api"
 version = "1.45.1"
 source = { registry = "https://pypi.org/simple" }
@@ -2670,11 +2710,13 @@ dependencies = [
     { name = "anthropic" },
     { name = "apscheduler" },
     { name = "arch" },
+    { name = "beancount" },
     { name = "defusedxml" },
     { name = "duckdb" },
     { name = "exchange-calendars" },
     { name = "httpx" },
     { name = "numpy" },
+    { name = "openpyxl" },
     { name = "pandas" },
     { name = "plotly" },
     { name = "psycopg", extra = ["binary"] },
@@ -2691,6 +2733,7 @@ dependencies = [
     { name = "structlog" },
     { name = "typer" },
     { name = "tzdata" },
+    { name = "xlrd" },
 ]
 
 [package.dev-dependencies]
@@ -2724,11 +2767,13 @@ requires-dist = [
     { name = "anthropic", specifier = ">=2.3.0" },
     { name = "apscheduler", specifier = ">=3.11,<4" },
     { name = "arch", specifier = ">=8.0" },
+    { name = "beancount", specifier = ">=3.2" },
     { name = "defusedxml", specifier = ">=0.7.1" },
     { name = "duckdb", specifier = ">=1.5" },
     { name = "exchange-calendars", specifier = ">=4.13.2" },
     { name = "httpx", specifier = ">=0.28" },
     { name = "numpy", specifier = ">=2.5" },
+    { name = "openpyxl", specifier = ">=3.1" },
     { name = "pandas", specifier = ">=3.0" },
     { name = "plotly", specifier = ">=7.1" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.3" },
@@ -2745,6 +2790,7 @@ requires-dist = [
     { name = "structlog", specifier = ">=26.1" },
     { name = "typer", specifier = ">=0.27" },
     { name = "tzdata", specifier = ">=2026.1" },
+    { name = "xlrd", specifier = ">=2.0" },
 ]
 
 [package.metadata.requires-dev]
@@ -3615,6 +3661,15 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/22/d5/39d5a704650f18799f37841442b464edb81cf2015f006eaef26068acc6ea/wrapt-2.5.1-cp312-cp312-win_amd64.whl", hash = "sha256:c39c7130ea0702c4ab0faf12da1df1e02d5174305c17edf02309e2f058c4114f", size = 106048, upload-time = "2026-10-14T00:37:33.188Z" },
     { url = "https://files.pythonhosted.org/packages/21/bf/65743adeeb5476920c62dad6cded7bc8789e19bd4f9a336d4ac812adb8de/wrapt-2.5.1-cp312-cp312-win_arm64.whl", hash = "sha256:e089a22ff5af1290b8c759a610830bdb2a829ef9c3d7797e4ee32c2f795ed482", size = 103200, upload-time = "2026-10-14T00:37:34.673Z" },
     { url = "https://files.pythonhosted.org/packages/bc/0c/7da7513ddcc8f1d831ec4bfbedc9f7f174ecb91042bc16916fc1e0d06b22/wrapt-2.5.1-py3-none-any.whl", hash = "sha256:c6e6c226b1ca5402d7ae5fb34a0d21f1b49124fe4200e5884d1e19e53c47ac1d", size = 81849, upload-time = "2026-10-14T00:39:37.441Z" },
+]
+
+[[package]]
+name = "xlrd"
+version = "2.0.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/07/5a/377161c2d3538d1990d7af382c79f3b2372e880b65de21b01b1a2b78691e/xlrd-2.0.2.tar.gz", hash = "sha256:08b5e25de58f21ce71dc7db3b3b8106c1fa776f3024c54e45b45b374e89234c9", size = 100167, upload-time = "2025-06-14T08:46:39.039Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/1a/62/c8d562e7766786ba6587d09c5a8ba9f718ed3fa8af7f4553e8f91c36f302/xlrd-2.0.2-py2.py3-none-any.whl", hash = "sha256:ea762c3d29f4cca48d82df517b6d89fbce4db3107f9d78713e48cd321d5c9aa9", size = 96555, upload-time = "2025-06-14T08:46:37.766Z" },
 ]
 
 [[package]]

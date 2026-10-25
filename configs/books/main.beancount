@@ -1,0 +1,10 @@
+; Household books (ADR 0017). Created by `qp books init`; browse them in the qp web app.
+option "title" "Household books"
+option "operating_currency" "TRY"
+option "operating_currency" "USD"
+option "inferred_tolerance_default" "*:0.005"
+
+include "accounts.beancount"
+include "budgets.beancount"
+include "manual.beancount"
+include "imports/*.beancount"

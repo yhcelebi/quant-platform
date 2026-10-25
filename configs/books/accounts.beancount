@@ -1,0 +1,113 @@
+; Chart of accounts (ADR 0017). Copied to data/books/ by `qp books init`; edit your copy.
+; Categories are Expenses/Income accounts (one per transaction); use #tags for projects.
+; Close an account with `YYYY-MM-DD close Account` instead of deleting its line.
+
+; ---------------------------------------------------------------- assets: cash
+2026-10-01 open Assets:Bank:KuveytTurk            TRY   ; cari hesap
+2026-10-01 open Assets:Bank:VakifKatilim          TRY
+2026-10-01 open Assets:Bank:Akbank                TRY
+2026-10-01 open Assets:Wallet:Papara              TRY
+2026-10-01 open Assets:Bank:RevolutUS             USD
+2026-10-01 open Assets:Cash:Wallet                TRY   ; cash in hand
+
+; ---------------------------------------------------------------- assets: investments
+; Valued by qp's portfolio once the broker ledger is imported (qp_account links them);
+; otherwise shown at the net amount transferred.
+2026-10-01 open Assets:Investments:Midas
+  qp_account: "MIDAS"
+2026-10-01 open Assets:Investments:IBKR
+  qp_account: "IBKR"
+2026-10-01 open Assets:Investments:Other
+
+; ---------------------------------------------------------------- assets: you add these
+; 2026-10-01 open Assets:Property:Home             TRY
+; 2026-10-01 open Assets:Vehicle:Car               TRY
+; 2026-10-01 open Assets:Receivable:Loans          TRY   ; money lent to others
+
+; ---------------------------------------------------------------- liabilities
+; Add each credit card and loan you have, e.g.:
+; 2026-10-01 open Liabilities:CreditCard:Akbank    TRY
+; 2026-10-01 open Liabilities:CreditCard:KuveytTurk TRY
+; 2026-10-01 open Liabilities:Loan:Car             TRY
+2026-10-01 open Liabilities:Payable               TRY   ; money you owe people
+
+; ---------------------------------------------------------------- equity
+2026-10-01 open Equity:Opening-Balances
+2026-10-01 open Equity:Conversions               ; currency exchange between own accounts
+
+; ---------------------------------------------------------------- income
+2026-10-01 open Income:Salary
+2026-10-01 open Income:Bonus
+2026-10-01 open Income:Business                   ; freelance, side income
+2026-10-01 open Income:ProfitShare                ; katılım kâr payı
+2026-10-01 open Income:Interest
+2026-10-01 open Income:Dividends
+2026-10-01 open Income:Rent
+2026-10-01 open Income:Gifts
+2026-10-01 open Income:Refunds
+2026-10-01 open Income:Cashback
+2026-10-01 open Income:Other
+2026-10-01 open Income:Uncategorized
+
+; ---------------------------------------------------------------- expenses (household groups)
+2026-10-01 open Expenses:Housing:Rent
+2026-10-01 open Expenses:Housing:Dues             ; aidat
+2026-10-01 open Expenses:Housing:Maintenance
+2026-10-01 open Expenses:Housing:Furniture
+
+2026-10-01 open Expenses:Utilities:Electricity
+2026-10-01 open Expenses:Utilities:NaturalGas
+2026-10-01 open Expenses:Utilities:Water
+2026-10-01 open Expenses:Utilities:Internet
+2026-10-01 open Expenses:Utilities:Mobile
+
+2026-10-01 open Expenses:Food:Groceries
+2026-10-01 open Expenses:Food:Restaurants
+2026-10-01 open Expenses:Food:Delivery
+2026-10-01 open Expenses:Food:Coffee
+
+2026-10-01 open Expenses:Transport:Fuel
+2026-10-01 open Expenses:Transport:Public          ; İstanbulkart, metro, bus
+2026-10-01 open Expenses:Transport:Taxi
+2026-10-01 open Expenses:Transport:Parking-Tolls   ; otopark, HGS/OGS, köprü
+2026-10-01 open Expenses:Transport:CarMaintenance
+2026-10-01 open Expenses:Transport:CarInsurance    ; kasko, trafik sigortası
+
+2026-10-01 open Expenses:Health:Pharmacy
+2026-10-01 open Expenses:Health:Doctor
+2026-10-01 open Expenses:Health:Insurance
+2026-10-01 open Expenses:Health:Sports
+
+2026-10-01 open Expenses:Shopping:Clothing
+2026-10-01 open Expenses:Shopping:Electronics
+2026-10-01 open Expenses:Shopping:Home
+2026-10-01 open Expenses:Shopping:Online           ; marketplace orders not split
+2026-10-01 open Expenses:PersonalCare
+
+2026-10-01 open Expenses:Education:Courses
+2026-10-01 open Expenses:Education:Books
+
+2026-10-01 open Expenses:Leisure:Subscriptions     ; streaming, apps, cloud
+2026-10-01 open Expenses:Leisure:Entertainment
+2026-10-01 open Expenses:Leisure:Hobbies
+
+2026-10-01 open Expenses:Travel:Transport
+2026-10-01 open Expenses:Travel:Accommodation
+2026-10-01 open Expenses:Travel:Other
+
+2026-10-01 open Expenses:Family:Children
+2026-10-01 open Expenses:Family:Support            ; money sent to family
+2026-10-01 open Expenses:Giving:Charity            ; sadaka, bağış
+2026-10-01 open Expenses:Giving:Zakat
+2026-10-01 open Expenses:Giving:Gifts
+
+2026-10-01 open Expenses:Fees:Bank                 ; EFT/havale, account and card fees
+2026-10-01 open Expenses:Fees:FX                   ; exchange spreads, conversion fees
+2026-10-01 open Expenses:Taxes:Income
+2026-10-01 open Expenses:Taxes:Vehicle             ; MTV
+2026-10-01 open Expenses:Taxes:Property            ; emlak vergisi
+2026-10-01 open Expenses:Taxes:Other
+
+2026-10-01 open Expenses:Business                  ; costs of side income
+2026-10-01 open Expenses:Other
+2026-10-01 open Expenses:Uncategorized

@@ -1,0 +1,20 @@
+; Entries you write by hand: opening balances, cash spending, assets you value yourself.
+;
+; Opening balances on the first day (one per account, from your statement):
+; 2026-10-01 * "Opening balance"
+;   Assets:Bank:Akbank            12345.67 TRY
+;   Equity:Opening-Balances
+;
+; A balance check from a statement (Beancount stops you if the books disagree):
+; 2026-10-31 balance Assets:Bank:Akbank   9876.54 TRY
+;
+; Cash spending:
+; 2026-10-05 * "Pazar" "vegetables" #weekly-market
+;   Expenses:Food:Groceries        350.00 TRY
+;   Assets:Cash:Wallet
+;
+; An asset you value yourself (open it in accounts.beancount first), revalued with a
+; balance-adjusting entry when its value changes:
+; 2026-10-01 * "Home, own estimate"
+;   Assets:Property:Home       5000000.00 TRY
+;   Equity:Opening-Balances

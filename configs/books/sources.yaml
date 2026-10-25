@@ -1,0 +1,83 @@
+# Statement formats per institution (ADR 0017). Copied to data/books/ by `qp books init`.
+# Column names are filled from a real export: run `uv run qp books inspect FILE` and copy
+# the header names here. A source with `verified: false` imports only after its columns are
+# set; a header that does not match is an error listing the columns found.
+#
+# Fields:
+#   account      the Beancount account the statement belongs to
+#   currency     currency of the amounts
+#   header_contains  words that all appear in the header row (finds it below title rows)
+#   sheet        Excel sheet name or index (default: first)
+#   date         column; date_format (strptime, e.g. "%d.%m.%Y" or "%d/%m/%Y %H:%M")
+#   description  one column or a list of columns joined with " / "
+#   amount       one signed column (negative = money out), or
+#   debit/credit two columns (money out / money in, both positive)
+#   balance      optional running balance column (used for duplicate detection)
+#   decimal      "," for Turkish formats (1.234,56), "." otherwise
+#   skip_if      optional regex on the description: rows to ignore (e.g. pending lines)
+
+sources:
+  kuveytturk:
+    account: Assets:Bank:KuveytTurk
+    currency: TRY
+    verified: false
+    decimal: ","
+    header_contains: []
+    date: null
+    date_format: "%d.%m.%Y"
+    description: null
+    amount: null
+    balance: null
+
+  vakifkatilim:
+    account: Assets:Bank:VakifKatilim
+    currency: TRY
+    verified: false
+    decimal: ","
+    header_contains: []
+    date: null
+    date_format: "%d.%m.%Y"
+    description: null
+    amount: null
+    balance: null
+
+  akbank:
+    account: Assets:Bank:Akbank
+    currency: TRY
+    verified: false
+    decimal: ","
+    header_contains: []
+    date: null
+    date_format: "%d.%m.%Y"
+    description: null
+    amount: null
+    balance: null
+
+  papara:
+    account: Assets:Wallet:Papara
+    currency: TRY
+    verified: false
+    decimal: ","
+    header_contains: []
+    date: null
+    date_format: "%d.%m.%Y %H:%M"
+    description: null
+    amount: null
+    balance: null
+
+  revolut:
+    # Revolut's usual CSV header (to confirm with your US export: it may differ)
+    account: Assets:Bank:RevolutUS
+    currency: USD
+    verified: false
+    decimal: "."
+    header_contains: ["Completed Date", "Description", "Amount"]
+    date: "Completed Date"
+    date_format: "%Y-%m-%d %H:%M:%S"
+    description: ["Description"]
+    amount: "Amount"
+    fee: "Fee"
+    balance: "Balance"
+    skip_if: null
+    state_column: "State"
+    state_ok: ["COMPLETED"]

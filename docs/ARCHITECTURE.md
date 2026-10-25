@@ -62,7 +62,7 @@ optimization | scenarios
 risk                           portfolio risk + pre-trade gate + kill switch
 performance | factors | valuation
 portfolio
-ledger | macro | news | fundamentals
+ledger | macro | news | fundamentals | books   (books: household Beancount ledger, ADR 0017)
 data                           connectors/, lake/, quality/, catalog, as_of queries
 reference                      instrument master, calendars, corporate actions
 platform                       settings, logging, DB session, lake paths, notifier

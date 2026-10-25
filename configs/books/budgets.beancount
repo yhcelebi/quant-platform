@@ -1,0 +1,18 @@
+; Budgets (qp compares them with actual spending for any day, week, month or year and
+; alerts at 80% and 100%).
+;
+; Period: "daily", "weekly", "monthly", "quarterly" or "yearly". A budget is converted to
+; whatever period you look at (200 TRY daily = 6,200 TRY in a 31-day month). A group budget
+; (Expenses:Food) covers all its subcategories. A newer line for the same account replaces
+; the older one from its date on. Uncomment and set your own amounts:
+;
+; 2026-10-01 custom "budget" Expenses:Food:Groceries   "daily"    0.00 TRY
+; 2026-10-01 custom "budget" Expenses:Food             "weekly"   0.00 TRY
+; 2026-10-01 custom "budget" Expenses:Housing          "monthly"  0.00 TRY
+; 2026-10-01 custom "budget" Expenses:Utilities        "monthly"  0.00 TRY
+; 2026-10-01 custom "budget" Expenses:Transport        "monthly"  0.00 TRY
+; 2026-10-01 custom "budget" Expenses:Health           "monthly"  0.00 TRY
+; 2026-10-01 custom "budget" Expenses:Shopping         "monthly"  0.00 TRY
+; 2026-10-01 custom "budget" Expenses:Leisure          "monthly"  0.00 TRY
+; 2026-10-01 custom "budget" Expenses:Giving           "monthly"  0.00 TRY
+; 2026-10-01 custom "budget" Expenses:Travel           "yearly"   0.00 TRY

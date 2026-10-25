@@ -1,0 +1,71 @@
+# Categorization rules (ADR 0017). Copied to data/books/ by `qp books init`; edit your copy.
+# First match wins, top to bottom. `match` is a regular expression searched in the bank's
+# description after folding case and Turkish letters (MİGROS, Migros, migros all match
+# "migros"; ş->s, ğ->g, ı/i->i, ö->o, ü->u, ç->c), so write patterns in plain lower case.
+# Optional: `source` (only for one institution), `sign` ("out" spending, "in" money
+# received), `min`/`max` (absolute amount), `payee` (clean name), `tags` (list).
+# Test a description with: uv run qp books rules-test "MIGROS TICARET A.S. ISTANBUL"
+# Unmatched money out -> Expenses:Uncategorized, money in -> Income:Uncategorized; clear
+# them with `uv run qp books review` or in the web app's Review page.
+
+rules:
+  # --- transfers between your own accounts (recorded once even if both sides import)
+  - {match: "papara", account: "Assets:Wallet:Papara", payee: "Papara transfer", sign: out}
+  - {match: "revolut", account: "Assets:Bank:RevolutUS", payee: "Revolut transfer"}
+  - {match: "midas", account: "Assets:Investments:Midas", payee: "Midas"}
+  - {match: "interactive brokers|ibkr", account: "Assets:Investments:IBKR", payee: "IBKR"}
+
+  # --- income
+  - {match: "maas|salary|payroll", account: "Income:Salary", sign: in}
+  - {match: "kar payi|kar payı|katilim hesabi kar", account: "Income:ProfitShare", sign: in}
+  - {match: "faiz", account: "Income:Interest", sign: in}
+  - {match: "temettu|dividend", account: "Income:Dividends", sign: in}
+  - {match: "iade|refund", account: "Income:Refunds", sign: in}
+  - {match: "cashback|nakit iade|chippin|bonus puan", account: "Income:Cashback", sign: in}
+
+  # --- groceries
+  - {match: "migros|a101|\\bbim\\b|\\bsok\\b|sok market|carrefour|file market|macrocenter|onur market|happy center|tarim kredi", account: "Expenses:Food:Groceries"}
+  # --- food delivery, restaurants, coffee
+  - {match: "getir|yemeksepeti|trendyol yemek|trendyolgo|migros hemen", account: "Expenses:Food:Delivery"}
+  - {match: "starbucks|kahve dunyasi|espresso lab|caffe nero|mado|simit sarayi", account: "Expenses:Food:Coffee"}
+  - {match: "restoran|restaurant|lokanta|kebap|burger|pizza|doner|cafe", account: "Expenses:Food:Restaurants"}
+
+  # --- transport
+  - {match: "shell|opet|\\bbp\\b|petrol ofisi|totalenergies|total enerji|aytemiz|lukoil|akaryakit", account: "Expenses:Transport:Fuel"}
+  - {match: "istanbulkart|belbim|metro|iett|marmaray|ankarakart|kentkart", account: "Expenses:Transport:Public"}
+  - {match: "uber|bitaksi|taksi|taxi", account: "Expenses:Transport:Taxi"}
+  - {match: "hgs|ogs|otopark|ispark|kopru|otoyol", account: "Expenses:Transport:Parking-Tolls"}
+
+  # --- utilities and phone
+  - {match: "enerjisa|ck enerji|elektrik|aydem|uludag elektrik", account: "Expenses:Utilities:Electricity"}
+  - {match: "igdas|baskentgaz|izmirgaz|dogalgaz|aksa dogal", account: "Expenses:Utilities:NaturalGas"}
+  - {match: "iski|aski|izsu|su idaresi", account: "Expenses:Utilities:Water"}
+  - {match: "superonline|turknet|ttnet|turk telekom|kablonet|millenicom", account: "Expenses:Utilities:Internet"}
+  - {match: "turkcell|vodafone|turk ?telekom mobil", account: "Expenses:Utilities:Mobile"}
+
+  # --- health
+  - {match: "eczane|pharmacy", account: "Expenses:Health:Pharmacy"}
+  - {match: "hastane|hospital|klinik|clinic|saglik|doktor|dis hekim", account: "Expenses:Health:Doctor"}
+  - {match: "macfit|spor salonu|gym|fitness", account: "Expenses:Health:Sports"}
+
+  # --- subscriptions
+  - {match: "netflix|spotify|youtube|disney|amazon prime|apple\\.com|icloud|google \\*|exxen|blutv|chatgpt|openai|anthropic|claude", account: "Expenses:Leisure:Subscriptions"}
+
+  # --- shopping
+  - {match: "trendyol|hepsiburada|amazon|n11|ciceksepeti|temu|aliexpress", account: "Expenses:Shopping:Online"}
+  - {match: "lc waikiki|defacto|koton|zara|h&m|\\bmavi\\b|boyner|\\bflo\\b", account: "Expenses:Shopping:Clothing"}
+  - {match: "mediamarkt|teknosa|vatan bilgisayar|apple store", account: "Expenses:Shopping:Electronics"}
+  - {match: "ikea|koctas|bauhaus|english home|madame coco|karaca", account: "Expenses:Shopping:Home"}
+
+  # --- travel
+  - {match: "thy|turk hava yollari|pegasus|ajet|sunexpress|airbnb|booking\\.com|otel|hotel|obilet|enuygun", account: "Expenses:Travel:Transport"}
+
+  # --- giving
+  - {match: "zekat", account: "Expenses:Giving:Zakat"}
+  - {match: "bagis|sadaka|vakfi|dernegi|losev|tegv|afad|kizilay", account: "Expenses:Giving:Charity"}
+
+  # --- fees and taxes
+  - {match: "masraf|komisyon|ucret|aidat kart|kart aidati|bsmv|eft ucreti|havale ucreti", account: "Expenses:Fees:Bank", sign: out}
+  - {match: "\\bmtv\\b|motorlu tasitlar", account: "Expenses:Taxes:Vehicle"}
+  - {match: "emlak vergisi", account: "Expenses:Taxes:Property"}
+  - {match: "\\bgib\\b|gelir idaresi|vergi dairesi|gelir vergisi", account: "Expenses:Taxes:Income"}
