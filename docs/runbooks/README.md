@@ -1,6 +1,6 @@
 # Runbooks
 
-Operational procedures: `ledger-import.md`, `data.md`, `performance-and-risk.md`, `macro-and-news.md`, `research.md`, `backtesting.md`, `trading.md`, `optimization-scenarios-assistant.md`. Phase 8 adds: VPS deploy, backups
+Operational procedures: `ledger-import.md`, `data.md`, `performance-and-risk.md`, `macro-and-news.md`, `research.md`, `backtesting.md`, `trading.md`, `optimization-scenarios-assistant.md`, `books.md` (household books). Phase 8 adds: VPS deploy, backups
 and restore test.
 
 ## Local database (phase 0)

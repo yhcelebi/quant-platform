@@ -47,9 +47,9 @@ phone use).
    (balance sheet), from qp's market data, point in time. Missing rates are reported, never
    guessed.
    - Income statement: income and expenses by category, savings and savings rate.
-   - Balance sheet: assets and liabilities by account, net worth. Brokers are valued by
-     qp's portfolio when their ledger is imported (`qp_account` metadata links them),
-     otherwise at net amount transferred, labelled "at cost".
+   - Balance sheet: assets and liabilities by account, net worth. Brokers are shown at
+     the net amount transferred; valuing them with qp's portfolio (linked by `qp_account`
+     metadata) once their ledgers are imported is *not built yet*.
    - Cash flow statement (direct method) on cash accounts (`Assets:Bank`, `Assets:Wallet`,
      `Assets:Cash`): operating (income, expenses, credit-card payments), investing
      (`Assets:Investments`, property), financing (loans), transfers between own cash

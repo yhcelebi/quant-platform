@@ -115,6 +115,7 @@ Defined in the `Makefile` (built in Phase 0):
 | `make deps-smoke`   | install all groups; smoke-test research/trading libraries       |
 | `make help`         | list every target                                               |
 | `make graph`        | rebuild the graphify code graph (`graphify-out/`, gitignored)   |
+| `make app`          | household books web app + JSON API (http://127.0.0.1:8765)      |
 | `uv run qp ref import FILE [--dry-run]` | import instruments                              |
 | `uv run qp ledger account add CODE --name ...` | create an account                        |
 | `uv run qp ledger import FILE [--dry-run]` | import canonical ledger CSV                  |
@@ -137,6 +138,8 @@ Defined in the `Makefile` (built in Phase 0):
 | `uv run qp optimize run --method hrp\|risk_parity\|min_variance\|min_cvar\|max_sharpe` | model weights (no orders) |
 | `uv run qp scenario list / run [--name] [--detail]` | shocks, replays, worst k-day losses |
 | `uv run qp ask "QUESTION"` | read-only assistant (needs an API key in `.env`) |
+| `uv run qp books init / inspect / import / add / review / categorize / income / balance / cashflow / budget / check` | household books (ADR 0017) |
+| `make app` / `make web-build` / `make web-check` | household books web app and API on :8765 |
 
 Local PostgreSQL 16 runs in Docker on `127.0.0.1:5433` (ADR 0002). Integration tests skip
 without a database locally; CI sets `QP_REQUIRE_DB=1` so they must run there.

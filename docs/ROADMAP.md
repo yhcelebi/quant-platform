@@ -17,6 +17,8 @@ Each phase must meet its exit criteria before the next starts. One phase per ses
 | 8     | Live, small capital          | not started  | —                 | Owner approval required |
 | 9     | Optimization, scenarios, assistant | in progress | partly       | Built 2026-10-25 (ADR 0016) with phase 8 skipped (needs owner approval): min variance, max Sharpe, risk parity, HRP, min CVaR (scipy, Ledoit-Wolf); shocks, historical replays and worst k-day losses on today's holdings (`configs/scenarios.yaml`); read-only Claude assistant with a rule-12 number guard; `qp optimize/scenario/ask`; Optimization, Scenarios, Assistant pages. Open: CI run, owner's real holdings (Phase 1), an API key for the assistant, older TCMB history for replays |
 
+| B     | Household books (owner priority) | in progress | partly | Built 2026-10-25 (ADR 0017): Beancount books in `data/books/` with git history, statement import (CSV/XLSX/XLS, column mapping per bank, duplicate and transfer detection), rules with learning, quick add, daily-to-yearly budgets, income statement, balance sheet, cash flow; `qp books`; JSON API and shadcn/ui web app installable on the phone (`make app`). Open: each bank's format from a real export, opening balances, broker valuation in the balance sheet |
+
 Status values: `not started`, `in progress`, `done`, `blocked`.
 
 ## Phases

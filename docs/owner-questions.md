@@ -175,3 +175,16 @@ Phase 8 (live) was skipped: it needs your explicit approval. Phase 9 does not de
 36. **Optimization defaults**: 500-day lookback, Ledoit-Wolf covariance, no per-asset cap,
     risk-free 0 for max Sharpe. A TRY deposit rate as `optimization.risk_free` makes
     max Sharpe more meaningful in TRY terms.
+
+## Household books (built 2026-10-25, recommended defaults; ADR 0017)
+
+37. **Statement samples**: export one statement from each of Kuveyt Türk, Vakıf Katılım,
+    Akbank, Papara and Revolut (CSV or Excel). Run `uv run qp books inspect FILE` and fill
+    `data/books/sources.yaml`, or show me the header row only (no amounts needed) and I fill
+    the mapping. Revolut has a preset I could not verify.
+38. **Credit cards and loans**: which cards (and banks) do you use? Add them to
+    `data/books/accounts.beancount`; card statements import the same way as bank ones.
+39. **Opening balances on 1 October 2026** per account, in `manual.beancount`.
+40. **Phone access**: Tailscale (`tailscale serve`) is the recommended way. ok?
+41. **Repository name**: suggestions were hazine, wealth-os, wealthbook, servet. Renaming
+    on GitHub is your action or needs your explicit go.
