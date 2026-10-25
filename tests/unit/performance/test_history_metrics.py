@@ -215,9 +215,10 @@ def test_twr_without_flows_is_the_simple_return(prices: list[int]) -> None:
     market = ManualMarketData([px(d, str(p)) for d, p in zip(days, prices, strict=False)], [])
     txs = [b.opening_position(c(days[0]), THY, TRY, Decimal(3), Decimal(1))]
     s = ok(performance(build_history(txs, market, end=days[-1])))
-    assert s.twr == pytest.approx(
-        Decimal(prices[-1]) / Decimal(prices[0]) - 1, abs=Decimal("1e-24")
-    )
+    # Decimal keeps 28 significant digits: chaining extreme ratios (e.g. 1 -> 168 -> 1) can
+    # drift in the last digits, so compare growth relatively.
+    expected = Decimal(prices[-1]) / Decimal(prices[0])
+    assert 1 + s.twr == pytest.approx(expected, rel=Decimal("1e-20"))
 
 
 def test_annualize_and_period_returns() -> None:
