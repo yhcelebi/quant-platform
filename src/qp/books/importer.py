@@ -136,6 +136,8 @@ def resolve_account(books: Books, name: str, *roots: str) -> str:
         return fold(a).replace(" ", "")
 
     found = [a for a in cands if key(a).endswith(":" + want)]
+    if not found and ":" not in want:  # a whole segment: "cash" -> Assets:Cash:Wallet
+        found = [a for a in cands if want in key(a).split(":")[1:]]
     if not found:
         found = [a for a in cands if key(a).split(":")[-1].startswith(want.split(":")[-1])]
     if len(found) == 1:

@@ -14,6 +14,7 @@ from apps.cli import (
     alerts_cmd,
     ask_cmd,
     backtest_cmd,
+    books_cmd,
     data_cmd,
     journal_cmd,
     ledger_cmd,
@@ -48,6 +49,7 @@ app.add_typer(journal_cmd.app, name="journal")
 app.add_typer(value_cmd.app, name="value")
 app.add_typer(backtest_cmd.app, name="backtest")
 app.add_typer(trader_cmd.app, name="trader")
+app.add_typer(books_cmd.app, name="books")
 app.add_typer(optimize_cmd.app, name="optimize")
 app.add_typer(scenario_cmd.app, name="scenario")
 app.command("ask")(ask_cmd.ask)

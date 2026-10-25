@@ -315,3 +315,41 @@ def test_parsers_and_fold() -> None:
     assert parse_date("05.10.2026 14:02", "%d.%m.%Y %H:%M") == date(2026, 10, 5)
     assert fold("MİGROS Şok ÇAĞDAŞ ılık") == "migros sok cagdas ilik"
     assert fold("Interest") == "interest"
+
+
+def test_cli_flow(books_dir: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from typer.testing import CliRunner
+
+    from apps.cli.common import console
+    from apps.cli.main import app
+
+    monkeypatch.setenv("QP_BOOKS__ROOT", str(books_dir))
+    monkeypatch.setenv("QP_CONFIG_DIR", str(REPO / "configs"))
+    monkeypatch.setenv("QP_MANUAL__DIR", str(tmp_path / "manual"))
+    monkeypatch.setenv("QP_LAKE__ROOT", str(tmp_path / "lake"))
+    monkeypatch.setattr(console, "width", 200)
+    runner = CliRunner()
+
+    def qp(*args: str, code: int = 0) -> str:
+        result = runner.invoke(app, list(args))
+        assert result.exit_code == code, result.output
+        return result.output
+
+    out = qp("books", "import", str(tmp_path / "akbank.csv"), "--source", "akbank")
+    assert "4 categorized, 1 to review" in out
+    review = qp("books", "review")
+    iid = next(line.split()[1] for line in review.splitlines() if "XYZ" in line)
+    learned = qp("books", "categorize", iid, "home", "--learn")
+    assert "learned: 'xyz ltd' -> Expenses:Shopping:Home" in learned
+    assert "nothing to review" in qp("books", "review")
+    qp("books", "add", "85,50", "coffee", "Kahveci", "--date", "2026-10-12")
+    inc = qp("books", "income", "--month", "2026-10")
+    assert "50,000.00" in inc
+    assert "1,648.50" in inc  # 1,250.50 + 300 + 12.50 + 85.50
+    assert "🏦" not in qp("books", "sources")
+    assert "Closing cash" in qp("books", "cashflow", "--month", "2026-10")
+    # Revolut needs a TCMB rate; none in this lake: reported, not guessed
+    qp("books", "import", str(tmp_path / "revolut.csv"), "--source", "revolut")
+    bal = qp("books", "balance", "--as-of", "2026-10-31")
+    assert "no TCMB rate" in bal
+    assert "ok:" in qp("books", "check")

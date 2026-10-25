@@ -186,3 +186,30 @@ def load_rules(path: Path) -> Rules:
             )
         )
     return Rules(out)
+
+
+def rule_pattern(description: str, words: int = 2) -> str:
+    """A rule pattern from a bank description: its first meaningful words, folded, escaped
+    ('MIGROS SANAL MAGAZA 1234 ISTANBUL' -> 'migros sanal')."""
+    tokens = [w for w in re.split(r"[^a-z]+", fold(description)) if len(w) > 1]
+    if not tokens:
+        raise QPValidationError(f"no words to learn a rule from in {description!r}")
+    return " ".join(tokens[:words])  # letters only: nothing to escape
+
+
+def add_rule(path: Path, pattern: str, account: str, payee: str | None = None) -> None:
+    """Put a learned rule first, so it wins over the general ones below it."""
+    text = path.read_text(encoding="utf-8")
+    marker = "rules:\n"
+    if marker not in text:
+        raise QPValidationError(f"{path}: no 'rules:' list")
+
+    def q(x: str) -> str:  # YAML single quotes: no escape sequences, '' for a quote
+        return "'" + x.replace("'", "''") + "'"
+
+    fields = f"match: {q(pattern)}, account: {q(account)}" + (
+        f", payee: {q(payee)}" if payee else ""
+    )
+    line = f"  - {{{fields}}}  # learned\n"
+    path.write_text(text.replace(marker, marker + line, 1), encoding="utf-8")
+    load_rules(path)  # still valid

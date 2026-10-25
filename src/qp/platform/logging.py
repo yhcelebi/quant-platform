@@ -51,6 +51,17 @@ class SecretRedactor:
         return {k: self._scrub(k if k != "event" else None, v) for k, v in event_dict.items()}
 
 
+class _CurrentStderr:
+    """Writes to whatever ``sys.stderr`` is at write time, so a logger configured while
+    stderr was temporarily replaced (a CLI test runner) never writes to a closed stream."""
+
+    def write(self, text: str) -> int:
+        return sys.stderr.write(text)
+
+    def flush(self) -> None:
+        sys.stderr.flush()
+
+
 def configure_logging(
     settings: LogSettings,
     *,
@@ -78,7 +89,7 @@ def configure_logging(
     structlog.configure(
         processors=processors,
         wrapper_class=structlog.make_filtering_bound_logger(level),
-        logger_factory=structlog.PrintLoggerFactory(file=stream or sys.stderr),
+        logger_factory=structlog.PrintLoggerFactory(file=stream or _CurrentStderr()),  # type: ignore[arg-type]
         cache_logger_on_first_use=False,
     )
 

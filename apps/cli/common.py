@@ -12,7 +12,7 @@ from rich.console import Console
 from qp.core.errors import QPError
 from qp.platform import Settings, init_platform
 
-console = Console()
+console = Console(emoji=False)  # account names like Assets:Bank:X are not emoji codes
 
 
 def settings(config_dir: Path | None = None, mode: str | None = None) -> Settings:
