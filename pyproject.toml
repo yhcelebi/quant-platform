@@ -71,7 +71,7 @@ build-backend = "hatchling.build"
 packages = ["src/qp", "apps"]
 
 [tool.uv]
-default-groups = ["dev"]
+default-groups = ["dev", "trading"]
 
 # --------------------------------------------------------------------------- ruff
 [tool.ruff]
@@ -134,7 +134,13 @@ module = ["qp.core", "qp.core.*", "qp.platform", "qp.platform.*", "qp.ledger", "
 strict = true
 
 [[tool.mypy.overrides]]
-module = ["apscheduler.*", "streamlit.*", "plotly", "plotly.*", "statsmodels", "statsmodels.*", "pyarrow", "pyarrow.*", "exchange_calendars", "exchange_calendars.*"]
+# NautilusTrader is compiled (Cython) without stubs: its classes are Any to mypy. Only the
+# modules allowed to import it subclass them (import-linter: nautilus-boundary).
+module = ["qp.strategies.nautilus", "qp.backtest", "qp.backtest.*", "qp.execution", "qp.execution.*"]
+disallow_subclassing_any = false
+
+[[tool.mypy.overrides]]
+module = ["apscheduler.*", "streamlit.*", "plotly", "plotly.*", "statsmodels", "statsmodels.*", "nautilus_trader", "nautilus_trader.*", "pyarrow", "pyarrow.*", "exchange_calendars", "exchange_calendars.*"]
 ignore_missing_imports = true
 
 # --------------------------------------------------------------------------- pytest

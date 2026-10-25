@@ -172,6 +172,25 @@ class AlertSettings(_Section):
     stale_price_days: int = Field(default=7, ge=1)
 
 
+class CostEntrySettings(_Section):
+    """Cost rates in force from ``valid_from`` (fractions of notional; ADR 0014, 5)."""
+
+    valid_from: date
+    commission: Decimal = Field(ge=0)
+    min_commission: Decimal = Field(default=Decimal(0), ge=0)
+    bsmv: Decimal = Field(default=Decimal(0), ge=0)
+    half_spread: Decimal = Field(default=Decimal(0), ge=0)
+    slippage: Decimal = Field(default=Decimal(0), ge=0)
+
+
+class BacktestSettings(_Section):
+    """Cost profiles by name (dated); a backtest must name one (ADR 0014)."""
+
+    costs: dict[str, tuple[CostEntrySettings, ...]] = {}
+    capital: Decimal = Decimal(100000)
+    lag_bars: int = Field(default=1, ge=1)
+
+
 class TelegramSettings(_Section):
     bot_token: SecretStr | None = None
     chat_id: str | None = None
@@ -206,6 +225,7 @@ class Settings(BaseSettings):
     performance: PerformanceSettings = PerformanceSettings()
     risk: RiskSettings = RiskSettings()
     alerts: AlertSettings = AlertSettings()
+    backtest: BacktestSettings = BacktestSettings()
     telegram: TelegramSettings = TelegramSettings()
     log: LogSettings = LogSettings()
 

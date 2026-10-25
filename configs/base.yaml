@@ -93,3 +93,14 @@ alerts:                 # evaluated after the evening TCMB fetch; Telegram if co
   drawdown: "0.10"      # alert when the drawdown from the peak exceeds 10%
   var_level: 0.99       # alert when the day's loss exceeds the previous day's 99% VaR
   stale_price_days: 7
+
+backtest:               # ADR 0014. PLACEHOLDER rates: replace with your broker's schedule.
+  capital: "100000"
+  lag_bars: 1           # trade the bar after the signal (never at the signal's own close)
+  costs:
+    bist_equity:        # commission + BSMV (5% on commission) + half spread + slippage
+      - {valid_from: 2000-01-01, commission: "0.0015", min_commission: "0", bsmv: "0.05", half_spread: "0.0005", slippage: "0.0005"}
+    us_equity:
+      - {valid_from: 2000-01-01, commission: "0", min_commission: "0", bsmv: "0", half_spread: "0.0002", slippage: "0.0003"}
+    fx_try:
+      - {valid_from: 2000-01-01, commission: "0", min_commission: "0", bsmv: "0", half_spread: "0.0010", slippage: "0.0005"}

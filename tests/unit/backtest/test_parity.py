@@ -1,0 +1,95 @@
+"""Backtest parity (ADR 0014, 7): NautilusTrader and the reference loop agree to the cent."""
+
+from __future__ import annotations
+
+from datetime import UTC, date, datetime, timedelta
+from decimal import Decimal
+
+import numpy as np
+import pytest
+
+from qp.backtest.data import PriceSeries
+from qp.backtest.engine import run_nautilus
+from qp.backtest.reference import simulate
+from qp.core import TRY, InstrumentId, QPValidationError
+from qp.strategies.costs import CostModel, CostRates
+
+
+def series(n: int = 160, seed: int = 3) -> PriceSeries:
+    rng = np.random.default_rng(seed)
+    days: list[date] = []
+    closes: list[Decimal] = []
+    known: list[datetime] = []
+    d, p = date(2025, 1, 2), 100.0
+    while len(days) < n:
+        if d.weekday() < 5:
+            p *= float(np.exp(rng.normal(0.0005, 0.02)))
+            days.append(d)
+            closes.append(Decimal(f"{p:.2f}"))
+            known.append(datetime(d.year, d.month, d.day, 15, 30, tzinfo=UTC))
+        d += timedelta(days=1)
+    return PriceSeries(InstrumentId.parse("TEST.BIST"), TRY, days, closes, known, "synthetic")
+
+
+COSTS = CostModel(
+    "test",
+    (
+        CostRates(
+            date(2000, 1, 1),
+            Decimal("0.0015"),
+            Decimal("5"),
+            Decimal("0.05"),
+            Decimal("0.0005"),
+            Decimal("0.0005"),
+        ),
+        CostRates(
+            date(2025, 4, 1),
+            Decimal("0.0010"),
+            Decimal("5"),
+            Decimal("0.05"),
+            Decimal("0.0005"),
+            Decimal("0.0005"),
+        ),
+    ),
+)
+
+
+@pytest.mark.parametrize(
+    ("signal", "params"),
+    [("sma_cross", {"fast": 5, "slow": 20}), ("momentum", {"lookback": 10}), ("buy_and_hold", {})],
+)
+def test_nautilus_matches_reference_to_the_cent(signal: str, params: dict[str, int]) -> None:
+    s = series()
+    ref = simulate(s, signal=signal, params=params, capital=Decimal(100000), costs=COSTS)
+    nt = run_nautilus(s, signal=signal, params=params, capital=Decimal(100000), costs=COSTS)
+    assert ref.fills
+    assert nt.fills == ref.fills  # same days, quantities, prices and fees (dated rates)
+    assert nt.cash_end == ref.cash_end  # Nautilus' own account balance
+    assert nt.equity == ref.equity
+    assert nt.targets == ref.targets
+    assert ref.total_fees > 0
+
+
+def test_fees_use_the_rates_in_force_on_the_fill_date() -> None:
+    s = series()
+    ref = simulate(
+        s, signal="sma_cross", params={"fast": 5, "slow": 20}, capital=Decimal(100000), costs=COSTS
+    )
+    for f in ref.fills:
+        assert f.fee == COSTS.fee(f.quantity * f.price, f.day)
+    assert {COSTS.rates(f.day).commission for f in ref.fills} == {
+        Decimal("0.0015"),
+        Decimal("0.0010"),
+    }
+
+
+def test_short_targets_are_refused() -> None:
+    s = series()
+    with pytest.raises(QPValidationError, match="long-only"):
+        simulate(
+            s,
+            signal="momentum",
+            params={"lookback": 10, "short": True},
+            capital=Decimal(100000),
+            costs=COSTS,
+        )
