@@ -253,7 +253,7 @@ def test_cli_flow(books_dir: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPat
     out = qp("books", "import", str(tmp_path / "akbank.csv"), "--source", "akbank")
     assert "4 categorized, 1 to review" in out
     review = qp("books", "review")
-    iid = next(line.split()[1] for line in review.splitlines() if "XYZ" in line)
+    iid = next(line.split()[-2] for line in review.splitlines() if "XYZ" in line)
     learned = qp("books", "categorize", iid, "home", "--learn")
     assert "learned: 'xyz ltd' -> Expenses:Shopping:Home" in learned
     assert "nothing to review" in qp("books", "review")

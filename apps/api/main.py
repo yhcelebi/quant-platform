@@ -18,6 +18,7 @@ from typing import Annotated, Any
 
 from beancount.core import data
 from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, Query, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -118,6 +119,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     ctx = Context(cfg)
     token = cfg.api.token.get_secret_value() if cfg.api.token else ""
     app = FastAPI(title="qp books", docs_url="/api/docs", openapi_url="/api/openapi.json")
+    app.add_middleware(  # only the local dev server (`make web-dev`) may call from another origin
+        CORSMiddleware,
+        allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+        allow_methods=["GET", "POST"],
+        allow_headers=["Authorization", "Content-Type"],
+    )
 
     def auth(authorization: Annotated[str | None, Header()] = None) -> None:
         if token and not secrets.compare_digest(authorization or "", f"Bearer {token}"):
@@ -388,7 +395,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     if WEB.is_dir():  # the built web app (apps/web: `pnpm build`)
         app.mount("/_next", StaticFiles(directory=WEB / "_next"), name="next")
 
-        @app.get("/{path:path}", include_in_schema=False)
+        @app.api_route("/{path:path}", methods=["GET", "HEAD"], include_in_schema=False)
         def web(path: str) -> FileResponse:
             for candidate in (WEB / path, WEB / f"{path}.html", WEB / path / "index.html"):
                 if candidate.is_file() and WEB in candidate.resolve().parents:

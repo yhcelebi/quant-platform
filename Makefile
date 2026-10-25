@@ -5,7 +5,7 @@ UV ?= uv
 
 .PHONY: help setup lock lint format typecheck imports test test-cov check \
         db-up db-down migrate doctor terminal workers trader-paper deps-smoke graph \
-        app web-install web-build web-dev
+        app web-install web-build web-dev web-check
 
 help: ## Show this help
 	@grep -hE '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-14s\033[0m %s\n", $$1, $$2}'
@@ -64,6 +64,9 @@ web-install: ## Install the web app's packages (apps/web, pnpm)
 
 web-build: ## Build the web app into apps/web/out (served by `make app`)
 	cd apps/web && pnpm build
+
+web-check: ## Lint and type-check the web app
+	cd apps/web && pnpm lint && pnpm exec tsc --noEmit
 
 web-dev: ## Web app with hot reload on :3000 (API: run `make app` alongside)
 	cd apps/web && pnpm dev

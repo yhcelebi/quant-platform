@@ -152,11 +152,13 @@ def review() -> None:
     if not queue:
         console.print("nothing to review")
         return
-    t = Table("id", "date", "amount", "account", "description", title=f"{len(queue)} to review")
+    t = Table("date", "amount", "account", "description", title=f"{len(queue)} to review")
+    t.add_column("id (for categorize)", no_wrap=True)
     for x in queue:
         n, c = books_ledger.units(x.postings[0])
-        t.add_row(str(x.meta["import_id"])[:20], str(x.date), f"{money(n)} {c}",
-                  x.postings[0].account, x.narration)  # fmt: skip
+        short = str(x.meta["import_id"]).split(":")
+        t.add_row(str(x.date), f"{money(n)} {c}", x.postings[0].account, x.narration,
+                  f"{short[0]}:{short[-1][:8]}")  # fmt: skip
     console.print(t)
     console.print("Categorize: uv run qp books categorize ID CATEGORY [--learn]")
 
