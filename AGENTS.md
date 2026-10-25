@@ -134,6 +134,9 @@ Defined in the `Makefile` (built in Phase 0):
 | `uv run qp value fundamentals / multiples / dcf` | SEC fundamentals, valuation |
 | `uv run qp backtest run / walkforward / list` | NautilusTrader backtests |
 | `uv run qp trader deploy / promote / status / run / halt / resume / flatten / report` | paper trading |
+| `uv run qp optimize run --method hrp\|risk_parity\|min_variance\|min_cvar\|max_sharpe` | model weights (no orders) |
+| `uv run qp scenario list / run [--name] [--detail]` | shocks, replays, worst k-day losses |
+| `uv run qp ask "QUESTION"` | read-only assistant (needs an API key in `.env`) |
 
 Local PostgreSQL 16 runs in Docker on `127.0.0.1:5433` (ADR 0002). Integration tests skip
 without a database locally; CI sets `QP_REQUIRE_DB=1` so they must run there.

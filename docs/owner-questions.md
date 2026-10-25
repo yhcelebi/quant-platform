@@ -157,3 +157,21 @@ Recommended defaults are in effect (ADR 0010); change any by answering.
     5% halts. Change in code review if you want different ones.
 32. **Starting the 4-week clock**: needs `make workers` running on weekdays (or a VPS,
     phase 8). Which strategy do you want on paper first? I deployed none in your database.
+
+## Phase 9 — optimization, scenarios, assistant (built 2026-10-25, recommended defaults)
+
+Phase 8 (live) was skipped: it needs your explicit approval. Phase 9 does not depend on it.
+
+33. **Assistant and your data**: with a key set, questions and the figures the tools return
+    (holdings, values, P&L) go to Anthropic's API. Off until you add
+    `QP_ASSISTANT__API_KEY` to `.env`. Default model `claude-opus-5-5`, effort `medium`.
+    ok?
+34. **Scenario sizes** in `configs/scenarios.yaml` are my assumptions (TRY -20%/-40%,
+    BIST -25%, global risk-off, rates +500bp; five replay windows 2018-2025). Please
+    adjust, and add modified durations for any bonds you hold.
+35. **Replay history**: the lake's TCMB rates start 2025-01-02, so the 2018-2023 replays
+    are unavailable. Backfill with `uv run qp data fetch tcmb --since 2018-01-01`? (TCMB
+    asks for at most one request per second; about 2,000 requests, ~35 minutes.)
+36. **Optimization defaults**: 500-day lookback, Ledoit-Wolf covariance, no per-asset cap,
+    risk-free 0 for max Sharpe. A TRY deposit rate as `optimization.risk_free` makes
+    max Sharpe more meaningful in TRY terms.

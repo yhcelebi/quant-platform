@@ -15,7 +15,7 @@ Each phase must meet its exit criteria before the next starts. One phase per ses
 | 6     | Backtesting                  | in progress  | partly            | Built 2026-10-25 (ADR 0014): pure signals, QPStrategy + dated cost model on NautilusTrader 1.231, reference loop with to-the-cent parity, bias checks, walk-forward with DSR/PBO, results with provenance, Backtests page. Real run on TCMB USD/TRY (indicative rates). Open: CI run, a price source for equities (Q7/Q8), owner cost schedule (Q27) |
 | 7     | Paper trading                | in progress  | no (needs time)   | Built 2026-10-25 (ADR 0015): daily paper broker (same signal/sizing/costs as the backtest), pre-trade gate, kill switch, flatten, promotions with evidence (approved_live owner-only, DB constraint), ledger-bridge reconciliation, heartbeats and alerts, paper-vs-backtest report (exactly 0 difference in tests), trading schema (migration 0007), Trading page. Exit needs 4+ weeks of paper trading: starts when the owner runs `make workers` |
 | 8     | Live, small capital          | not started  | —                 | Owner approval required |
-| 9     | Optimization, scenarios, assistant | not started | —            |       |
+| 9     | Optimization, scenarios, assistant | in progress | partly       | Built 2026-10-25 (ADR 0016) with phase 8 skipped (needs owner approval): min variance, max Sharpe, risk parity, HRP, min CVaR (scipy, Ledoit-Wolf); shocks, historical replays and worst k-day losses on today's holdings (`configs/scenarios.yaml`); read-only Claude assistant with a rule-12 number guard; `qp optimize/scenario/ask`; Optimization, Scenarios, Assistant pages. Open: CI run, owner's real holdings (Phase 1), an API key for the assistant, older TCMB history for replays |
 
 Status values: `not started`, `in progress`, `done`, `blocked`.
 
@@ -76,3 +76,5 @@ Status values: `not started`, `in progress`, `done`, `blocked`.
 - Optimization: mean-variance, risk parity, HRP, CVaR.
 - Stress scenarios: rate shocks, TRY depreciation, historical replay.
 - Read-only LLM assistant over `qp` functions.
+- **Exit:** each method tested against closed forms; scenarios on the example ledger match
+  hand calculations; the assistant flags every number not from `qp` results.
