@@ -12,17 +12,20 @@ from rich.table import Table
 import qp
 from apps.cli import (
     alerts_cmd,
+    ask_cmd,
     backtest_cmd,
     data_cmd,
     journal_cmd,
     ledger_cmd,
     macro_cmd,
     news_cmd,
+    optimize_cmd,
     perf_cmd,
     portfolio_cmd,
     ref_cmd,
     research_cmd,
     risk_cmd,
+    scenario_cmd,
     trader_cmd,
     value_cmd,
 )
@@ -45,6 +48,9 @@ app.add_typer(journal_cmd.app, name="journal")
 app.add_typer(value_cmd.app, name="value")
 app.add_typer(backtest_cmd.app, name="backtest")
 app.add_typer(trader_cmd.app, name="trader")
+app.add_typer(optimize_cmd.app, name="optimize")
+app.add_typer(scenario_cmd.app, name="scenario")
+app.command("ask")(ask_cmd.ask)
 console = Console()
 
 _STYLE = {Status.OK: "green", Status.WARN: "yellow", Status.FAIL: "red"}

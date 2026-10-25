@@ -43,7 +43,7 @@ class AssetWeight:
     current: float  # weight today within the optimized assets
     target: float
     risk_share: float  # share of the target portfolio's variance
-    trade_try: Decimal  # buy (+) / sell (-) to reach the target
+    trade_try: Decimal | None  # buy (+) / sell (-) to reach the target; None if nothing held
 
 
 @dataclass
@@ -177,10 +177,8 @@ def optimize_holdings(
     else:
         result.notes.append("none of these assets is held today: trades are not computed")
     for h, v, cw, tw, s in zip(kept, values, current, w.weights, shares, strict=True):
-        target_value = float_to_decimal(float(tw) * float(total), places=2)
-        result.assets.append(
-            AssetWeight(h.name, v, float(cw), float(tw), float(s), target_value - v)
-        )
+        trade = float_to_decimal(float(tw) * float(total), places=2) - v if total > 0 else None
+        result.assets.append(AssetWeight(h.name, v, float(cw), float(tw), float(s), trade))
     if not w.converged:
         result.notes.append("the solver did not report convergence; treat the weights as rough")
     return result

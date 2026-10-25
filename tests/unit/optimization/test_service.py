@@ -84,8 +84,11 @@ def test_optimize_matches_the_method_and_trades_rebalance_the_invested_value() -
     expected = min_variance(covariance(r)).weights
     assert [a.target for a in res.assets] == pytest.approx(list(expected), abs=1e-9)
     assert [a.current for a in res.assets] == pytest.approx([0.6, 0.3, 0.1])
-    assert abs(sum((a.trade_try for a in res.assets), Decimal(0))) <= Decimal("0.02")
+    trades = [a.trade_try for a in res.assets]
+    assert all(t is not None for t in trades)
+    assert abs(sum((t for t in trades if t is not None), Decimal(0))) <= Decimal("0.02")
     for a in res.assets:
+        assert a.trade_try is not None
         assert float(a.value_try + a.trade_try) == pytest.approx(a.target * 10000, abs=0.01)
     assert res.volatility is not None
     assert res.current_volatility is not None
@@ -102,6 +105,17 @@ def test_every_method_runs_on_holdings(method: Method) -> None:
     assert sum(a.target for a in res.assets) == pytest.approx(1.0)
     assert res.cvar is not None
     assert res.cvar > 0
+
+
+def test_assets_not_held_get_weights_but_no_trades() -> None:
+    unheld = [Holding(h.instrument, h.currency, Decimal(0)) for h in HOLDINGS[:3]]
+    res = optimize_holdings(
+        unheld, DAYS, _market(), as_of=LATEST, day=DAYS[-1], method=Method.MIN_VARIANCE
+    )
+    assert res.unavailable is None
+    assert all(a.trade_try is None for a in res.assets)
+    assert res.current_volatility is None
+    assert any("none of these assets is held" in n for n in res.notes)
 
 
 def test_unavailable_with_one_asset_or_short_history() -> None:
