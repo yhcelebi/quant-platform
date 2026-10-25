@@ -171,7 +171,7 @@ Phase 8 (live) was skipped: it needs your explicit approval. Phase 9 does not de
     adjust, and add modified durations for any bonds you hold.
 35. **Replay history**: the lake's TCMB rates start 2025-01-02, so the 2018-2023 replays
     are unavailable. Backfill with `uv run qp data fetch tcmb --since 2018-01-01`? (TCMB
-    asks for at most one request per second; about 2,000 requests, ~35 minutes.)
+    asks for at most one request per second: about 1,800 daily bulletins, ~30 minutes.)
 36. **Optimization defaults**: 500-day lookback, Ledoit-Wolf covariance, no per-asset cap,
     risk-free 0 for max Sharpe. A TRY deposit rate as `optimization.risk_free` makes
     max Sharpe more meaningful in TRY terms.
