@@ -164,7 +164,7 @@ class Toolbox:
     def performance(self, args: Json) -> Json:
         end = _day(args, "end", self.today)
         start = _day(args, "start", default_start(end))
-        view = View(args.get("view", "TRY"))
+        view = View(str(args.get("view", "TRY")).lower())
         rep = performance_report(
             self.ctx(),
             end=end,
@@ -338,6 +338,7 @@ class Toolbox:
             "known_at": now.isoformat(),
             "observations": [{"date": str(d), "value": _num(v, 4)} for d, v in obs[-last:]],
             "source": raw[-1].source if raw else None,
+            "unavailable": None if obs else f"no data for {ind.series} known now",
         }
 
     def news(self, args: Json) -> Json:
@@ -395,13 +396,7 @@ class Toolbox:
         runs = []
         for folder in list_runs(self.settings)[-int(args.get("limit", 10)) :]:
             s = read_summary(folder)
-            runs.append(
-                {
-                    "run": folder.name,
-                    "superseded": (folder / "SUPERSEDED.txt").exists(),
-                    "summary": s,
-                }
-            )
+            runs.append({"run": folder.name, "summary": s})
         return {"runs": runs}
 
     def paper(self, args: Json) -> Json:

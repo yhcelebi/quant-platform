@@ -179,7 +179,9 @@ def holdings_var(
     total = sum((h.value_try for h in holdings), Decimal(0))
     result = VarResult("holdings simulation", total, max(len(window) - 1, 0))
     if len(window) - 1 < min_observations:
-        result.unavailable = f"{len(window) - 1} scenario days; at least {min_observations} needed"
+        result.unavailable = (
+            f"{max(len(window) - 1, 0)} scenario days; at least {min_observations} needed"
+        )
         return result
     pnl = [0.0] * (len(window) - 1)
     covered = Decimal(0)
