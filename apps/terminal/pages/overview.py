@@ -115,7 +115,7 @@ st.dataframe(
         {
             "dataset": d.name,
             "last valid date": str(d.last_valid or "—"),
-            "days old": (today - d.last_valid).days if isinstance(d.last_valid, date) else "—",
+            "days old": (today - d.last_valid).days if isinstance(d.last_valid, date) else None,
         }
         for d in data_service.dataset_status(ctx.settings)
     ],

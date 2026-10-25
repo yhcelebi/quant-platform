@@ -14,6 +14,8 @@ PAGES: list[tuple[str, str, str]] = [
     ("portfolio.py", "Portfolio", ":material/account_balance_wallet:"),
     ("performance.py", "Performance", ":material/trending_up:"),
     ("risk.py", "Risk", ":material/shield:"),
+    ("scenarios.py", "Scenarios", ":material/thunderstorm:"),
+    ("optimization.py", "Optimization", ":material/tune:"),
     ("macro.py", "Macro", ":material/public:"),
     ("data.py", "Data", ":material/database:"),
     ("news.py", "News", ":material/newspaper:"),
@@ -21,6 +23,7 @@ PAGES: list[tuple[str, str, str]] = [
     ("backtests.py", "Backtests", ":material/history:"),
     ("trading.py", "Trading", ":material/swap_horiz:"),
     ("journal.py", "Journal", ":material/edit_note:"),
+    ("assistant.py", "Assistant", ":material/chat:"),
 ]
 
 st.set_page_config(page_title="qp terminal", layout="wide")

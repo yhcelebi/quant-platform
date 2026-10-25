@@ -146,6 +146,48 @@ def hbars(title: str, names: Sequence[str], weights: Sequence[float]) -> go.Figu
     return _layout(fig, title=title, y_format="", height=max(160, 34 * len(names) + 70))
 
 
+def grouped_hbars(
+    title: str, names: Sequence[str], series: Sequence[tuple[str, Sequence[float]]]
+) -> go.Figure:
+    """Two or more weight sets per entity (e.g. current vs model), one hue per set in the
+    fixed categorical order, 2px gaps between bars, legend above the plot."""
+    colors = series_colors()
+    fig = go.Figure()
+    for i, (label, values) in enumerate(series[: len(colors)]):
+        fig.add_trace(
+            go.Bar(
+                x=list(values),
+                y=list(names),
+                name=label,
+                orientation="h",
+                marker={"color": colors[i], "line": {"width": 2, "color": "rgba(0,0,0,0)"}},
+                hovertemplate=f"{label} %{{y}}: %{{x:.2%}}<extra></extra>",
+            )
+        )
+    fig.update_yaxes(autorange="reversed")
+    fig.update_layout(barmode="group", bargap=0.3, bargroupgap=0.05, hovermode="closest")
+    height = max(180, 26 * len(names) * max(len(series), 1) + 90)
+    return _layout(fig, title=title, y_format="", height=height)
+
+
+def signed_hbars(title: str, names: Sequence[str], values: Sequence[float]) -> go.Figure:
+    """Signed amounts (P&L): losses red, gains blue, one bar per row, values labeled."""
+    fig = go.Figure(
+        go.Bar(
+            x=list(values),
+            y=list(names),
+            orientation="h",
+            marker={"color": [RED if v < 0 else BLUE for v in values]},
+            text=[f"{v:,.0f}" for v in values],
+            textposition="outside",
+            hovertemplate="%{y}: %{x:,.2f} TRY<extra></extra>",
+        )
+    )
+    fig.update_yaxes(autorange="reversed")
+    fig.update_layout(showlegend=False, bargap=0.35, hovermode="closest")
+    return _layout(fig, title=title, height=max(160, 34 * len(names) + 70))
+
+
 def histogram(title: str, values: Sequence[float], marker: float | None, label: str) -> go.Figure:
     """Distribution of scenario P&L with the VaR threshold marked."""
     fig = go.Figure(
