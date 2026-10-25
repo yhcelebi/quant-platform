@@ -13,6 +13,7 @@ import qp.decisions.models
 import qp.ledger.models
 import qp.news.models
 import qp.reference.models
+import qp.risk.models
 from qp.platform import SCHEMAS, Base, Database, create_db_engine
 from qp.platform.health import Status, check_migrations, check_schemas
 from qp.platform.settings import DbSettings

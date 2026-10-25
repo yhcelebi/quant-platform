@@ -12,8 +12,8 @@ from typing import Any
 from qp.backtest.data import PriceSeries
 from qp.core import QPValidationError
 from qp.strategies.costs import CostModel
-from qp.strategies.nautilus import order_delta
 from qp.strategies.signals import get
+from qp.strategies.sizing import order_delta
 
 ZERO = Decimal(0)
 
@@ -61,7 +61,10 @@ def simulate(
     costs: CostModel,
     lag: int = 1,
     band: Decimal = Decimal("0.01"),
+    trade_from: date | None = None,
 ) -> SimResult:
+    """``trade_from``: signals see every close, but targets are only taken from that day on
+    (paper trading starts mid-history; the paper-vs-backtest report uses this)."""
     fn = get(signal).fn
     buffer = cost_buffer(costs)
     cash, qty = capital, ZERO
@@ -82,7 +85,8 @@ def simulate(
         closes.append(float(price))
         t = fn(closes, **params)[-1]
         out.targets.append(t)
-        pending.append(t)
+        if trade_from is None or day >= trade_from:
+            pending.append(t)
         out.days.append(day)
         out.equity.append(cash + qty * price)
         out.position.append(qty)

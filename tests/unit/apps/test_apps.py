@@ -9,7 +9,7 @@ from typer.testing import CliRunner
 
 from apps.cli.main import app as cli_app
 from apps.terminal.app import PAGES
-from apps.trader.main import EXIT_REFUSED
+from apps.trader.main import EXIT_NO_DB, EXIT_REFUSED
 from apps.trader.main import main as trader_main
 from apps.workers.main import build_scheduler
 from apps.workers.main import main as workers_main
@@ -71,6 +71,8 @@ def test_workers_schedule(config_dir: Path, monkeypatch: pytest.MonkeyPatch) -> 
         "tcmb_fx",
         "tcmb_fx_retry",
         "news",
+        "paper",
+        "heartbeat_check",
         "alerts",
     ]
     tcmb = scheduler.get_job("tcmb_fx")
@@ -85,8 +87,12 @@ def test_workers_schedule(config_dir: Path, monkeypatch: pytest.MonkeyPatch) -> 
     assert "alerts" not in [j.id for j in quiet.get_jobs()]
 
 
-def test_trader_paper_runs(in_tmp_cwd: Path) -> None:
-    assert trader_main([]) == 0
+def test_trader_paper_without_database_says_so(
+    in_tmp_cwd: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("QP_DB__HOST", "127.0.0.1")
+    monkeypatch.setenv("QP_DB__PORT", "1")
+    assert trader_main([]) == EXIT_NO_DB  # never reports a cycle that did not run
 
 
 @pytest.mark.parametrize("mode", ["live", "backtest"])

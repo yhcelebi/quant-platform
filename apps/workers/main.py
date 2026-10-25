@@ -10,6 +10,8 @@ Jobs (Europe/Istanbul times; job logic lives in qp, every run is recorded in ops
                  new events sent once
 - news           every sources.news.poll_minutes (30): official feeds, then holding-news alerts
 - fred_calendar  daily 07:10, only with the FRED key: release dates into the calendar
+- paper          Mon-Fri 18:45 (after alerts): one paper cycle per strategy in paper status
+- heartbeat_chk  Mon-Fri hourly 09:00-21:00: alert if a paper strategy stopped reporting
 
 A failing job is logged and recorded; it never stops the scheduler or other jobs.
 """
@@ -25,9 +27,10 @@ from apscheduler.triggers.base import BaseTrigger
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
-from qp.alerts.service import run_alerts, run_news_alerts
+from qp.alerts.service import run_alerts, run_heartbeat_check, run_news_alerts
 from qp.core import SystemClock, istanbul_date
 from qp.data import service
+from qp.execution.service import run_paper
 from qp.news.service import fetch_news
 from qp.platform import Database, Settings, get_logger, init_platform
 from qp.platform.notifier import build_notifier
@@ -90,6 +93,22 @@ def fred_calendar(settings: Settings) -> None:
         log.info("workers.fred_calendar", rows=report.rows_written, errors=len(report.errors))
 
 
+def paper(settings: Settings) -> None:
+    with Database.from_settings(settings.db) as db:
+        reports = run_paper(settings, db, now=SystemClock().now())
+        log.info(
+            "workers.paper",
+            strategies=len(reports),
+            halted=[r.strategy for r in reports if r.halted],
+        )
+
+
+def heartbeat_check(settings: Settings) -> None:
+    with Database.from_settings(settings.db) as db:
+        result = run_heartbeat_check(settings, db, now=SystemClock().now())
+        log.info("workers.heartbeat_check", missing=len(result.candidates))
+
+
 def _guard(job_id: str, func: Callable[[], None]) -> Callable[[], None]:
     def run() -> None:
         try:
@@ -129,6 +148,14 @@ def jobs(settings: Settings) -> dict[str, tuple[Callable[[], None], BaseTrigger]
             lambda: fred_calendar(settings),
             CronTrigger.from_crontab("10 7 * * *", timezone=TZ),
         )
+    out["paper"] = (
+        lambda: paper(settings),
+        CronTrigger.from_crontab("45 18 * * mon-fri", timezone=TZ),
+    )
+    out["heartbeat_check"] = (
+        lambda: heartbeat_check(settings),
+        CronTrigger.from_crontab("0 9-21 * * mon-fri", timezone=TZ),
+    )
     if settings.alerts.enabled:
         out["alerts"] = (
             lambda: alerts(settings),

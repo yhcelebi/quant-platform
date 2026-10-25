@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import date, datetime, time, timedelta
 
+from sqlalchemy import func, select
+
 from qp.alerts.rules import (
     AlertCandidate,
     Thresholds,
@@ -13,7 +15,7 @@ from qp.alerts.rules import (
     performance_alerts,
 )
 from qp.alerts.store import deliver, record
-from qp.core import assume_istanbul
+from qp.core import assume_istanbul, istanbul_date
 from qp.data.market import PreloadedMarketData
 from qp.news.store import query as news_query
 from qp.performance.history import LATEST
@@ -24,6 +26,8 @@ from qp.platform.jobs import job_run
 from qp.platform.notifier import Notifier, build_notifier
 from qp.platform.settings import Settings
 from qp.portfolio.holdings import build_report
+from qp.risk.models import HeartbeatRow
+from qp.strategies.promotion import deployments
 
 
 @dataclass
@@ -111,6 +115,45 @@ def run_news_alerts(
     since: datetime = assume_istanbul(datetime.combine(day - timedelta(days=lookback_days), time()))
     items = news_query(db, as_of=LATEST, since=since, entity_keys=sorted(held))
     run.candidates = news_alerts(items, held)
+    run.new_ids = record(db, run.candidates)
+    run.errors = deliver(db, notifier or build_notifier(settings.telegram), run.new_ids)
+    return run
+
+
+def run_heartbeat_check(
+    settings: Settings,
+    db: Database,
+    *,
+    now: datetime,
+    notifier: Notifier | None = None,
+    max_age_hours: int = 30,
+) -> AlertRun:
+    """Alert when a paper strategy's last heartbeat is older than ``max_age_hours`` on a
+    weekday (ADR 0015, 7): the trader stopped running or crashed."""
+    run = AlertRun(istanbul_date(now))
+    if run.day.weekday() >= 5:
+        run.notes.append("weekend: no heartbeat expected")
+        return run
+    for d in deployments(db):
+        if d.status not in ("paper", "approved_live"):
+            continue
+        with db.session() as s:
+            last = s.scalar(
+                select(func.max(HeartbeatRow.created_at)).where(
+                    HeartbeatRow.component == f"paper:{d.name}"
+                )
+            )
+        if last is None or (now - last).total_seconds() > max_age_hours * 3600:
+            seen = "never" if last is None else f"{last:%Y-%m-%d %H:%M} UTC"
+            run.candidates.append(
+                AlertCandidate(
+                    "missing_heartbeat",
+                    d.name,
+                    run.day,
+                    "critical",
+                    f"Paper trader for {d.name} has not reported since {seen}",
+                )
+            )
     run.new_ids = record(db, run.candidates)
     run.errors = deliver(db, notifier or build_notifier(settings.telegram), run.new_ids)
     return run

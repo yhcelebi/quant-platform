@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import json
 from datetime import UTC, datetime
-from decimal import ROUND_DOWN, Decimal
+from decimal import Decimal
 
 from nautilus_trader.backtest.models import FeeModel
 from nautilus_trader.config import StrategyConfig
@@ -25,6 +25,7 @@ from nautilus_trader.trading.strategy import Strategy
 
 from qp.strategies.costs import CostModel
 from qp.strategies.signals import get
+from qp.strategies.sizing import order_delta
 
 ZERO = Decimal(0)
 
@@ -56,31 +57,6 @@ class QPStrategyConfig(StrategyConfig, frozen=True):
     lag_bars: int = 1
     cost_rate: str = "0"  # proportional cost, grossed into the sizing price
     band: str = "0.01"  # no-trade band as a fraction of equity
-
-
-def order_delta(
-    target: float,
-    equity: Decimal,
-    price: Decimal,
-    held: Decimal,
-    cost_rate: Decimal,
-    band: Decimal,
-) -> Decimal:
-    """Units to trade toward the target; trades worth less than ``band`` x equity are
-    skipped (no daily churn from price drift), except a move to flat (ADR 0014, 4)."""
-    want = target_quantity(target, equity, price, cost_rate)
-    delta = want - held
-    if delta != 0 and want != 0 and abs(delta) * price < band * equity:
-        return Decimal(0)
-    return delta
-
-
-def target_quantity(target: float, equity: Decimal, price: Decimal, cost_rate: Decimal) -> Decimal:
-    """Whole units for a target fraction of equity, truncated toward zero (ADR 0014, 4)."""
-    if price <= 0:
-        return ZERO
-    raw = Decimal(str(target)) * equity / (price * (1 + cost_rate))
-    return raw.to_integral_value(rounding=ROUND_DOWN)
 
 
 class QPStrategy(Strategy):

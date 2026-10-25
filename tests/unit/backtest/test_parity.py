@@ -125,7 +125,7 @@ def test_metrics_compound_returns_by_hand() -> None:
 
 
 def test_no_trade_band_skips_drift_but_not_exits() -> None:
-    from qp.strategies.nautilus import order_delta
+    from qp.strategies.sizing import order_delta
 
     # want 1000 units at 10 with equity 10000: holding 995 -> 5 units = 50 < 1% of 10000
     assert (

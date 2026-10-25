@@ -16,6 +16,7 @@ import qp.ledger.models
 import qp.news.models
 import qp.platform.jobs
 import qp.reference.models
+import qp.risk.models
 from qp.platform.db import SCHEMAS, Base, create_db_engine, database_url
 from qp.platform.settings import load_settings
 
