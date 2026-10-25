@@ -1,0 +1,41 @@
+# Stress scenarios (ADR 0016). These are ASSUMPTIONS you state, not data: edit freely.
+# Changes are fractions (-0.20 = -20%). fx: change of the currency's TRY rate (USD +0.25
+# means USD/TRY rises 25%, i.e. TRY loses 20% against USD). Price changes, first match wins:
+# instrument (SYMBOL.VENUE), venue (e.g. BIST), asset_class (equity, etf, fund, bond, crypto,
+# commodity, other, from the instrument master). rate_bp with durations: price change
+# -D x dy for the listed instruments only.
+shocks:
+  - name: TRY -20%
+    description: TRY loses 20% against USD and EUR overnight; prices unchanged in their currency
+    fx: {USD: 0.25, EUR: 0.25, GBP: 0.25, CHF: 0.25}
+  - name: TRY -40%
+    description: a 2018/2021-sized depreciation in one step
+    fx: {USD: 0.6667, EUR: 0.6667, GBP: 0.6667, CHF: 0.6667}
+  - name: BIST -25%
+    description: everything listed on Borsa Istanbul falls 25% in TRY; FX unchanged
+    venue: {BIST: -0.25}
+  - name: Global risk-off
+    description: equities -30%, gold +10%, TRY -15% against USD and EUR
+    asset_class: {equity: -0.30, etf: -0.30, fund: -0.15, commodity: 0.10, crypto: -0.50}
+    fx: {USD: 0.1765, EUR: 0.1765}
+  - name: Rates +500bp
+    description: TRY yields +500bp; applies only to instruments given a modified duration
+    rate_bp: 500
+    durations: {}   # e.g. {TRT150127T13.BIST: 1.1}
+
+replays:            # windows replayed with data known now; holdings without data are listed
+  - name: Aug 2018 TRY crisis
+    start: 2018-07-31
+    end: 2018-08-13
+  - name: Covid crash
+    start: 2020-02-19
+    end: 2020-03-23
+  - name: Dec 2021 TRY crash
+    start: 2021-11-01
+    end: 2021-12-20
+  - name: Mar 2023 bank stress
+    start: 2023-03-08
+    end: 2023-03-17
+  - name: Mar 2025 TRY selloff
+    start: 2025-03-18
+    end: 2025-03-24
